@@ -30,9 +30,18 @@ built with love by Lruihao and his friends.\n
 Complete documentation is available at ${chalk.cyan('https://fixit.lruihao.cn/')}.`
 
 // define commands
-program.command('create <project-name>').description('create a new FixIt project from a template').action(createAction)
-program.command('update').description('update the FixIt theme to the latest version').action(updateAction)
-program.command('help <command>').description('display help for a specific command').action(helpAction)
+program
+  .command('create <project-name>')
+  .description('create a new FixIt project from a template')
+  .action(createAction)
+program
+  .command('update')
+  .description('update the FixIt theme to the latest version')
+  .action(updateAction)
+program
+  .command('help <command>')
+  .description('display help for a specific command')
+  .action(helpAction)
 
 // define options
 program.option('-l, --latest', 'check the latest version of FixIt theme')
