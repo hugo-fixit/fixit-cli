@@ -2,23 +2,23 @@
 
 [![NPM version](https://img.shields.io/npm/v/fixit-cli.svg)](https://www.npmjs.com/package/fixit-cli)
 
-👉 中文 | [English](README.en.md)
+👉 English | [中文](README.md)
 
-🛠️ 一个基于 Node.js 开发的用于 [FixIt](https://github.com/hugo-fixit/FixIt) 站点初始化的脚手架工具。
+🛠️ A node-based tooling for [FixIt](https://github.com/hugo-fixit/FixIt) site initialization.
 
-## 系统依赖
+## System Requirements
 
 - [Node.js](https://nodejs.org/) (>= 16.0.0)
 - [Git](https://git-scm.com/)
-- [Hugo](https://gohugo.io/) 扩展版 (>= 0.109.0)
+- [Hugo](https://gohugo.io/) extended (>= 0.109.0)
 
-## 安装
+## Installation
 
 ```bash
 npm install -g fixit-cli
 ```
 
-## 使用
+## Usage
 
 ```plain
 Usage: fixit <command> [options]
@@ -33,13 +33,13 @@ Commands:
   help <command>         display help for a specific command
 ```
 
-例如，创建一个名为 `my-blog` 的站点：
+For example, create a site named `my-blog`:
 
 ```bash
 fixit create my-blog
 ```
 
-## 开发
+## Development
 
 ```bash
 npm install
@@ -48,12 +48,12 @@ npm unlink fixit
 npm run test -- -h
 ```
 
-## 相关项目
+## Related Projects
 
 - [FixIt](https://github.com/hugo-fixit/FixIt)
 - [hugo-fixit-blog-git](https://github.com/hugo-fixit/hugo-fixit-blog-git)
 - [hugo-fixit-blog-go](https://github.com/hugo-fixit/hugo-fixit-blog-go)
 
-## 作者
+## Author
 
-[Lruihao](https://github.com/Lruihao "在 GitHub 上关注我")
+[Lruihao](https://github.com/Lruihao "Follow me on GitHub")

@@ -1,11 +1,12 @@
 {
   "name": "fixit-cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A cli tool for FixIt theme.",
   "keywords": [
-    "hugo",
+    "fixit-cli",
     "fixit",
-    "fixit-cli"
+    "hugo",
+    "nodejs"
   ],
   "homepage": "https://github.com/hugo-fixit/fixit-cli#readme",
   "bugs": {
