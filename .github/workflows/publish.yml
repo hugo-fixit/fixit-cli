@@ -21,7 +21,7 @@ jobs:
           # Defaults to the user or organization that owns the workflow file
           # scope: '@cell-x'
 
-      - name: Install dependencies and Build package
+      - name: Install dependencies
         run: npm ci
 
       - name: Publish Package to npmjs

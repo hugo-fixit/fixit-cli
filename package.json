@@ -1,6 +1,6 @@
 {
   "name": "fixit-cli",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A cli tool for FixIt theme.",
   "keywords": [
     "fixit-cli",

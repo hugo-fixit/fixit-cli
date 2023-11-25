@@ -28,12 +28,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 16
       
-      - name: Install dependencies and Build package
-        run: |
-          yarn install --frozen-lockfile
-          yarn build
+      - name: Install dependencies
+        run: npm ci
 
       - name: GitHub Release
         uses: softprops/action-gh-release@v1
@@ -42,8 +40,8 @@ jobs:
           # Creates a draft release. Defaults to false
           draft: true
           # Newline-delimited list of path globs for asset files to upload
-          files: |
-            dist/*.js
-            dist/*.js.map
+          # files: |
+          #   dist/*.js
+          #   dist/*.js.map
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
