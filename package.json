@@ -19,6 +19,9 @@
   "license": "MIT",
   "author": "Lruihao (https://lruihao.cn)",
   "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
   "bin": {
     "fixit": "bin/cli.js"
   },

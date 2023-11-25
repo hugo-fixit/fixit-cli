@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import chalk from 'chalk'
-import fs from 'fs'
 import {
   createAction,
   checkAction,
   helpAction,
 } from '../lib/actions.js'
+import { importJson } from '../lib/utils.js'
 
-const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+const pkg = importJson('../package.json')
 const program = new Command()
 const logo = `
 =============================================
