@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import fs from 'fs'
 import {
   createAction,
-  updateAction,
+  checkAction,
   helpAction,
 } from '../lib/actions.js'
 
@@ -35,16 +35,13 @@ program
   .description('create a new FixIt project from a template')
   .action(createAction)
 program
-  .command('update')
-  .description('update the FixIt theme to the latest version')
-  .action(updateAction)
+  .command('check')
+  .description('check the latest version of FixIt theme')
+  .action(checkAction)
 program
   .command('help <command>')
   .description('display help for a specific command')
   .action(helpAction)
-
-// define options
-program.option('-l, --latest', 'check the latest version of FixIt theme')
 
 // define cli
 program
