@@ -10,7 +10,9 @@
 
 - [Node.js](https://nodejs.org/) (>= 16.0.0)
 - [Git](https://git-scm.com/)
-- [Hugo](https://gohugo.io/) extended (>= 0.109.0)
+- [Hugo](https://gohugo.io/) extended (>= 0.112.0)
+
+If you use the [Hugo Modules](https://gohugo.io/hugo-modules/) feature to load the theme, you will also need to install [Go](https://go.dev/dl/).
 
 ## Installation
 
@@ -51,8 +53,8 @@ npm run test -- -h
 ## Related Projects
 
 - [FixIt](https://github.com/hugo-fixit/FixIt)
-- [hugo-fixit-blog-git](https://github.com/hugo-fixit/hugo-fixit-blog-git)
-- [hugo-fixit-blog-go](https://github.com/hugo-fixit/hugo-fixit-blog-go)
+- [hugo-fixit-starter](https://github.com/hugo-fixit/hugo-fixit-starter)
+- [hugo-fixit-starter1](https://github.com/hugo-fixit/hugo-fixit-starter1)
 
 ## Author
 

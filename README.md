@@ -10,7 +10,9 @@
 
 - [Node.js](https://nodejs.org/) (>= 16.0.0)
 - [Git](https://git-scm.com/)
-- [Hugo](https://gohugo.io/) 扩展版 (>= 0.109.0)
+- [Hugo](https://gohugo.io/) 扩展版 (>= 0.112.0)
+
+如果你使用使用 [Hugo 模块](https://gohugo.io/hugo-modules/) 功能加载主题，你还需要安装 [Go](https://golang.org/dl/)。
 
 ## 安装
 
@@ -51,8 +53,8 @@ npm run test -- -h
 ## 相关项目
 
 - [FixIt](https://github.com/hugo-fixit/FixIt)
-- [hugo-fixit-blog-git](https://github.com/hugo-fixit/hugo-fixit-blog-git)
-- [hugo-fixit-blog-go](https://github.com/hugo-fixit/hugo-fixit-blog-go)
+- [hugo-fixit-starter](https://github.com/hugo-fixit/hugo-fixit-starter)
+- [hugo-fixit-starter1](https://github.com/hugo-fixit/hugo-fixit-starter1)
 
 ## 作者
 
