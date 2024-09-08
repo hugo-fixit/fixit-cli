@@ -10,9 +10,9 @@
 
 - [Node.js](https://nodejs.org/) (>= 16.0.0)
 - [Git](https://git-scm.com/)
-- [Hugo](https://gohugo.io/) 扩展版 (>= 0.112.0)
+- [Hugo](https://gohugo.io/) 扩展版
 
-如果你使用使用 [Hugo 模块](https://gohugo.io/hugo-modules/) 功能加载主题，你还需要安装 [Go](https://golang.org/dl/)。
+如果你使用 [Hugo 模块](https://gohugo.io/hugo-modules/) 功能加载主题，你还需要安装 [Go](https://golang.org/dl/)。
 
 ## 安装
 

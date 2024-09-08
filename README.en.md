@@ -10,7 +10,7 @@
 
 - [Node.js](https://nodejs.org/) (>= 16.0.0)
 - [Git](https://git-scm.com/)
-- [Hugo](https://gohugo.io/) extended (>= 0.112.0)
+- [Hugo](https://gohugo.io/) extended
 
 If you use the [Hugo Modules](https://gohugo.io/hugo-modules/) feature to load the theme, you will also need to install [Go](https://go.dev/dl/).
 
