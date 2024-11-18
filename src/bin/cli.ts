@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 import { Command } from 'commander'
 import chalk from 'chalk'
 import {
@@ -8,7 +9,7 @@ import {
 } from '../lib/actions.js'
 import { importJson } from '../lib/utils.js'
 
-const pkg = importJson('../package.json')
+const pkg = importJson('../../package.json')
 const program = new Command()
 const logo = `
 =============================================

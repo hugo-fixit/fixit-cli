@@ -3,12 +3,18 @@ import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
+interface ReleaseInfo {
+  version: string;
+  changelog: string;
+  homeUrl: string;
+}
+
 /**
  * import json file
  * @param {String} relativePath relative path to json file
  * @returns
  */
-function importJson(relativePath) {
+function importJson(relativePath: string): any {
   const moduleURL = new URL(import.meta.url)
   const modulePath = fileURLToPath(moduleURL)
   const basePath = dirname(modulePath)
@@ -16,6 +22,7 @@ function importJson(relativePath) {
   const fileContent = readFileSync(filePath, 'utf8')
   return JSON.parse(fileContent)
 }
+
 /**
  * get latest release info from GitHub API
  * @param {String} repoOwner repo owner
@@ -23,16 +30,16 @@ function importJson(relativePath) {
  * @example getLatestRelease('hugo-fixit', 'FixIt')
  * @returns 
  */
-function getLatestRelease(repoOwner, repoName) {
+function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseInfo> {
   return new Promise((resolve, reject) => {
-    const options = {
+    const options: https.RequestOptions = {
       hostname: 'api.github.com',
       path: `/repos/${repoOwner}/${repoName}/releases/latest`,
-      headers: { 'User-Agent': 'mozilla/5.0' },
-    }
-    // set Authorization header set to avoid GitHub API rate limit
-    if (process.env.GITHUB_TOKEN) {
-      options.headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
+      headers: { 
+        'User-Agent': 'mozilla/5.0',
+        // set Authorization header set to avoid GitHub API rate limit
+        ...(process.env.GITHUB_TOKEN && { 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}` })
+      },
     }
 
     const req = https.get(options, (res) => {

@@ -1,5 +1,11 @@
 import inquirer from 'inquirer'
-import { simpleGit, CleanOptions } from 'simple-git'
+import { 
+  simpleGit,
+  SimpleGit,
+  CleanOptions,
+  SimpleGitProgressEvent,
+  CloneOptions,
+} from 'simple-git'
 import chalk from 'chalk'
 import ora from 'ora'
 import { getLatestRelease } from './utils.js'
@@ -14,7 +20,8 @@ function createAction() {
       type: 'input',
       message: 'Please input project name:',
       name: 'name',
-      validate: (val) => {
+      default: '',
+      validate: (val: string) => {
         if (val === '') {
           return 'project name is required'
         }
@@ -47,23 +54,27 @@ function createAction() {
   }
   inquirer
     .prompt(promptList)
-    .then((answers) => {
+    .then((answers: { name: string, template: 'go' | 'git' }) => {
       console.log(`Initializing FixIt project ${answers.name}, please wait a moment.`)
       // 1. download template
       const spinnerClone = ora(`Downloading template from ${chalk.cyan(repositories[answers.template])}.`).start()
-      const progress = ({method, stage, progress}) => {
+      const progress = ({method, stage, progress}: SimpleGitProgressEvent) => {
         spinnerClone.text = chalk.yellow(`git.${method} ${stage} stage ${progress}% complete${'.'.repeat(Math.floor(Math.random() * 3) + 1)}`)
       }
-      const git = simpleGit({ progress, recursive: true })
+      // const git: SimpleGit = simpleGit({ progress, recursive: true })
+      const git: SimpleGit = simpleGit({ progress })
       git.clean(CleanOptions.FORCE)
       // TODO try to performance submodules download by fixit update command
-      git.clone(repositories[answers.template], answers.name, {
+      const cloneOptions: CloneOptions = {
         '--depth': 1,
         '--branch': 'main',
-        '--single-branch': true,
-        '--recurse-submodules': answers.template === 'git',
-        '--shallow-submodules': answers.template === 'git',
-      }, (err) => {
+        '--single-branch': null,
+      }
+      if (answers.template === 'git') {
+        cloneOptions['--recurse-submodules'] = undefined
+        cloneOptions['--shallow-submodules'] = undefined
+      }
+      git.clone(repositories[answers.template], answers.name, cloneOptions, (err) => {
         if (err) {
           spinnerClone.fail()
           console.log(chalk.red(err))
@@ -85,8 +96,8 @@ function createAction() {
           }
           spinnerInit.text = `${chalk.green('[Success]')} removed remote origin.`
         })
-        // remove history commits
         spinnerInit.text = 'Removing history commits.'
+        // remove history commits
         git.raw(['update-ref', '-d', 'HEAD'], (err) => {
           if (err) {
             spinnerInit.fail()
@@ -137,7 +148,7 @@ function checkAction() {
  * @param {String} command specific command
  * @example fixit help <command>
  */
-function helpAction(command) {
+function helpAction(command: string) {
   switch (command) {
     case 'create':
       console.log('Create a new FixIt project from a template based on Git submodule or Hugo module.')

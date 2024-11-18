@@ -20,13 +20,17 @@
   "author": "Lruihao (https://lruihao.cn)",
   "type": "module",
   "exports": {
-    ".": "./index.js"
+    ".": "./dist/index.js"
   },
   "bin": {
-    "fixit": "bin/cli.js"
+    "fixit": "./dist/bin/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "node bin/cli.js"
+    "build": "tsc",
+    "start": "tsc && node ./dist/bin/cli.js"
   },
   "dependencies": {
     "chalk": "^5.3.0",
@@ -37,5 +41,13 @@
   },
   "engines": {
     "node": ">=16"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/commander": "^2.12.2",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.5.4",
+    "@types/ora": "^3.2.0",
+    "typescript": "^5.5.4"
   }
 }
