@@ -113,7 +113,7 @@ function createAction() {
           spinnerInit.text = `${chalk.green('[Success]')} initialized FixIt project ${answers.name}.`
           spinnerInit.succeed()
           console.log('🎉 Congratulations! You have created a new FixIt project.\n')
-          console.log(`${chalk.blue(`cd ${answers.name} && hugo server`)}\n\nGo! Enjoy it and Fix it! 🐛`)
+          console.log(`${chalk.blue(`cd ${answers.name} && hugo server -O`)}\n\nGo! Enjoy it and Fix it! 🐛`)
         })
       })
     })
