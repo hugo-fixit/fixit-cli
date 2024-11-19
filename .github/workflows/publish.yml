@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build dist
+        run: npm run build
+
       - name: Publish Package to npmjs
         run: npm publish
         env:

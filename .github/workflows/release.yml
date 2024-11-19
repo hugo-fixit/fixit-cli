@@ -33,6 +33,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build and compress
+        run: |
+          npm run build
+          tar -zcvf dist.tar.gz dist
+          ls -al
+
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
@@ -40,8 +46,7 @@ jobs:
           # Creates a draft release. Defaults to false
           draft: true
           # Newline-delimited list of path globs for asset files to upload
-          # files: |
-          #   dist/*.js
-          #   dist/*.js.map
+          files: |
+            dist.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
