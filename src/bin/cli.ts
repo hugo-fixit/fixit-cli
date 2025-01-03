@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import process from 'node:process'
-import chalk from 'chalk'
 import { Command } from 'commander'
+import c from 'picocolors'
 import {
   checkAction,
   createAction,
@@ -21,15 +21,15 @@ const logo = `
         █      ▐█  ▄ █   ▐█    █     
          █      ▐ █   ▀▄  ▐   ▀      
           ▀        ▀                
-              ${chalk.italic(`${pkg.name} v${pkg.version}`)}
-         ${chalk.italic(pkg.description)}
+              ${c.italic(`${pkg.name} v${pkg.version}`)}
+         ${c.italic(pkg.description)}
 
 =============================================
 `
-const description = `${chalk.green(logo.replace(/^\n/g, ''))}
+const description = `${c.green(logo.replace(/^\n/g, ''))}
 FixIt is a clean, elegant but advanced blog theme for Hugo
 built with love by Lruihao and his friends.\n
-Complete documentation is available at ${chalk.cyan('https://fixit.lruihao.cn/')}.`
+Complete documentation is available at ${c.cyan('https://fixit.lruihao.cn/')}.`
 
 // define commands
 program
@@ -47,6 +47,7 @@ program
 
 // define cli
 program
+  .name('fixit')
   .usage('<command> [options]')
   .description(description)
   .version(`${pkg.name} v${pkg.version}`, '-v, --version')
