@@ -8,7 +8,7 @@
 
 ## System Requirements
 
-- [Node.js](https://nodejs.org/) (>= 16.0.0)
+- [Node.js](https://nodejs.org/) (>= 18)
 - [Git](https://git-scm.com/)
 - [Hugo](https://gohugo.io/) extended
 
