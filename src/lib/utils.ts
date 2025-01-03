@@ -1,18 +1,19 @@
-import https from 'https'
-import { readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { readFileSync } from 'node:fs'
+import https from 'node:https'
+import { dirname, join } from 'node:path'
+import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 interface ReleaseInfo {
-  version: string;
-  changelog: string;
-  homeUrl: string;
+  version: string
+  changelog: string
+  homeUrl: string
 }
 
 /**
  * import json file
- * @param {String} relativePath relative path to json file
- * @returns
+ * @param {string} relativePath relative path to json file
+ * @returns {any} json object
  */
 function importJson(relativePath: string): any {
   const moduleURL = new URL(import.meta.url)
@@ -25,20 +26,20 @@ function importJson(relativePath: string): any {
 
 /**
  * get latest release info from GitHub API
- * @param {String} repoOwner repo owner
- * @param {String} repoName repo name
+ * @param {string} repoOwner repo owner
+ * @param {string} repoName repo name
  * @example getLatestRelease('hugo-fixit', 'FixIt')
- * @returns 
+ * @returns {Promise<ReleaseInfo>} release info
  */
 function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseInfo> {
   return new Promise((resolve, reject) => {
     const options: https.RequestOptions = {
       hostname: 'api.github.com',
       path: `/repos/${repoOwner}/${repoName}/releases/latest`,
-      headers: { 
+      headers: {
         'User-Agent': 'mozilla/5.0',
         // set Authorization header set to avoid GitHub API rate limit
-        ...(process.env.GITHUB_TOKEN && { 'Authorization': `Bearer ${process.env.GITHUB_TOKEN}` })
+        ...(process.env.GITHUB_TOKEN && { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }),
       },
     }
 
@@ -56,7 +57,10 @@ function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseI
           const changelog = releaseInfo.body
           const homeUrl = releaseInfo.html_url
           resolve({ version, changelog, homeUrl })
-        } else {
+        }
+        else {
+          // TODO reject(new Error(`Failed to get latest release (${res.statusCode})`))
+          // eslint-disable-next-line prefer-promise-reject-errors
           reject(`Failed to get latest release (${res.statusCode})`)
         }
       })
@@ -71,6 +75,6 @@ function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseI
 }
 
 export {
-  importJson,
   getLatestRelease,
+  importJson,
 }

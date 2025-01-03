@@ -1,13 +1,16 @@
-import inquirer from 'inquirer'
-import { 
-  simpleGit,
-  SimpleGit,
-  CleanOptions,
-  SimpleGitProgressEvent,
+import type {
   CloneOptions,
+  SimpleGit,
+  SimpleGitProgressEvent,
 } from 'simple-git'
+import process from 'node:process'
 import chalk from 'chalk'
+import inquirer from 'inquirer'
 import ora from 'ora'
+import {
+  CleanOptions,
+  simpleGit,
+} from 'simple-git'
 import { getLatestRelease } from './utils.js'
 
 /**
@@ -26,7 +29,7 @@ function createAction() {
           return 'project name is required'
         }
         return true
-      }
+      },
     },
     {
       type: 'list',
@@ -42,7 +45,7 @@ function createAction() {
           value: 'git',
         },
       ],
-    }
+    },
   ]
   const repositories = {
     go: 'https://github.com/hugo-fixit/hugo-fixit-starter.git',
@@ -58,7 +61,7 @@ function createAction() {
       console.log(`Initializing FixIt project ${answers.name}, please wait a moment.`)
       // 1. download template
       const spinnerClone = ora(`Downloading template from ${chalk.cyan(repositories[answers.template])}.`).start()
-      const progress = ({method, stage, progress}: SimpleGitProgressEvent) => {
+      const progress = ({ method, stage, progress }: SimpleGitProgressEvent) => {
         spinnerClone.text = chalk.yellow(`git.${method} ${stage} stage ${progress}% complete${'.'.repeat(Math.floor(Math.random() * 3) + 1)}`)
       }
       // const git: SimpleGit = simpleGit({ progress, recursive: true })
@@ -106,15 +109,15 @@ function createAction() {
           }
           spinnerInit.text = `${chalk.green('[Success]')} removed history commits.`
         })
-        .then(async () => {
+          .then(async () => {
           // commit first commit
-          await git.add('./*')
-          await git.commit('first commit')
-          spinnerInit.text = `${chalk.green('[Success]')} initialized FixIt project ${answers.name}.`
-          spinnerInit.succeed()
-          console.log('🎉 Congratulations! You have created a new FixIt project.\n')
-          console.log(`${chalk.blue(`cd ${answers.name} && hugo server -O`)}\n\nGo! Enjoy it and Fix it! 🐛`)
-        })
+            await git.add('./*')
+            await git.commit('first commit')
+            spinnerInit.text = `${chalk.green('[Success]')} initialized FixIt project ${answers.name}.`
+            spinnerInit.succeed()
+            console.log('🎉 Congratulations! You have created a new FixIt project.\n')
+            console.log(`${chalk.blue(`cd ${answers.name} && hugo server -O`)}\n\nGo! Enjoy it and Fix it! 🐛`)
+          })
       })
     })
 }
@@ -145,7 +148,7 @@ function checkAction() {
 
 /**
  * action for help command
- * @param {String} command specific command
+ * @param {string} command specific command
  * @example fixit help <command>
  */
 function helpAction(command: string) {
@@ -171,7 +174,7 @@ function helpAction(command: string) {
 }
 
 export {
-  createAction,
   checkAction,
+  createAction,
   helpAction,
 }

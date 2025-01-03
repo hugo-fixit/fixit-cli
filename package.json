@@ -1,24 +1,25 @@
 {
   "name": "fixit-cli",
+  "type": "module",
   "version": "1.1.1",
+  "packageManager": "pnpm@9.15.0",
   "description": "A cli tool for FixIt theme.",
+  "author": "Lruihao (https://lruihao.cn)",
+  "license": "MIT",
+  "homepage": "https://github.com/hugo-fixit/fixit-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hugo-fixit/fixit-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hugo-fixit/fixit-cli/issues"
+  },
   "keywords": [
     "fixit-cli",
     "fixit",
     "hugo",
     "nodejs"
   ],
-  "homepage": "https://github.com/hugo-fixit/fixit-cli#readme",
-  "bugs": {
-    "url": "https://github.com/hugo-fixit/fixit-cli/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hugo-fixit/fixit-cli.git"
-  },
-  "license": "MIT",
-  "author": "Lruihao (https://lruihao.cn)",
-  "type": "module",
   "exports": {
     ".": "./dist/index.js"
   },
@@ -28,26 +29,31 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "tsc",
-    "start": "tsc && node ./dist/bin/cli.js"
-  },
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "commander": "^11.1.0",
-    "inquirer": "^9.2.12",
-    "ora": "^7.0.1",
-    "simple-git": "^3.21.0"
-  },
   "engines": {
     "node": ">=16"
   },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node ./dist/bin/cli.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "release": "fixit-releaser changelog"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.0.0",
+    "inquirer": "^9.2.12",
+    "ora": "^8.1.1",
+    "simple-git": "^3.27.0",
+    "yargs": "^17.7.2"
+  },
   "devDependencies": {
-    "@types/chalk": "^2.2.0",
-    "@types/commander": "^2.12.2",
+    "@antfu/eslint-config": "^3.12.1",
+    "@hugo-fixit/fixit-releaser": "^1.0.3",
     "@types/inquirer": "^9.0.7",
-    "@types/node": "^22.5.4",
-    "@types/ora": "^3.2.0",
-    "typescript": "^5.5.4"
+    "@types/node": "^22.10.4",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2"
   }
 }
