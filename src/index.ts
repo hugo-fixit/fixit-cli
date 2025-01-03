@@ -2,7 +2,7 @@ import {
   checkAction,
   createAction,
   helpAction,
-} from './lib/actions.js'
+} from './bin/actions.js'
 import {
   getLatestRelease,
   importJson,

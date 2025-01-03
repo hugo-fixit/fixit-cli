@@ -43,7 +43,6 @@
     "@clack/prompts": "^0.9.0",
     "commander": "^13.0.0",
     "inquirer": "^9.2.12",
-    "ora": "^8.1.1",
     "picocolors": "^1.1.1",
     "simple-git": "^3.27.0"
   },

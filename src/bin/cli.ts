@@ -3,12 +3,12 @@
 import process from 'node:process'
 import { Command } from 'commander'
 import c from 'picocolors'
+import { importJson } from '../lib/utils.js'
 import {
   checkAction,
   createAction,
   helpAction,
-} from '../lib/actions.js'
-import { importJson } from '../lib/utils.js'
+} from './actions.js'
 
 const pkg = importJson('../../package.json')
 const program = new Command()
