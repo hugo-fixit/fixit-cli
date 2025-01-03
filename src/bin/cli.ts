@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander'
+import process from 'node:process'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import {
-  createAction,
   checkAction,
+  createAction,
   helpAction,
 } from '../lib/actions.js'
 import { importJson } from '../lib/utils.js'

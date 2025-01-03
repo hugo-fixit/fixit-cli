@@ -1,19 +1,19 @@
 import {
-  createAction,
   checkAction,
+  createAction,
   helpAction,
 } from './lib/actions.js'
 import {
-  importJson,
   getLatestRelease,
+  importJson,
 } from './lib/utils.js'
 
 export {
-  createAction,
   checkAction,
+  createAction,
+  getLatestRelease,
   helpAction,
   importJson,
-  getLatestRelease,
 }
 
 export default {
