@@ -42,14 +42,12 @@
   "dependencies": {
     "@clack/prompts": "^0.9.0",
     "commander": "^13.0.0",
-    "inquirer": "^9.2.12",
     "picocolors": "^1.1.1",
     "simple-git": "^3.27.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.12.1",
     "@hugo-fixit/fixit-releaser": "^1.0.3",
-    "@types/inquirer": "^9.0.7",
     "@types/node": "^22.10.4",
     "eslint": "^9.17.0",
     "typescript": "^5.7.2"
