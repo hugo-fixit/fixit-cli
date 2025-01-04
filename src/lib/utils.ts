@@ -59,15 +59,13 @@ function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseI
           resolve({ version, changelog, homeUrl })
         }
         else {
-          // TODO reject(new Error(`Failed to get latest release (${res.statusCode})`))
-          // eslint-disable-next-line prefer-promise-reject-errors
-          reject(`Failed to get latest release (${res.statusCode})`)
+          reject(new Error(`Failed to get latest release (${res.statusCode})`))
         }
       })
     })
 
     req.on('error', (err) => {
-      reject(err.message)
+      reject(err)
     })
 
     req.end()

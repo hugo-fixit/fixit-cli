@@ -137,9 +137,10 @@ function checkAction() {
       )
       // TODO run command to update theme
     })
-    .catch((error) => {
+    .catch((error: Error) => {
+      // TODO [Failed]、[Note] 等使用反色标记
       spinner.stop(`${c.red('[Failed]')} failed to check the latest version of FixIt theme.`, -1)
-      p.log.error(c.red(error))
+      p.log.error(c.red(error.message))
       p.log.step(`\n${c.green('[Note]')} You can set GITHUB_TOKEN env to avoid GitHub API rate limit.\nRun command ${c.blue('fixit help check')} for more details.\n`)
       process.exit(1)
     })
