@@ -6,6 +6,7 @@ import type {
 import process from 'node:process'
 import * as p from '@clack/prompts'
 import c from 'picocolors'
+import shell from 'shelljs'
 import {
   CleanOptions,
   simpleGit,
@@ -57,7 +58,6 @@ async function createAction() {
   }
   const git: SimpleGit = simpleGit({ progress })
   git.clean(CleanOptions.FORCE)
-  // TODO try to performance submodules download by fixit update command
   const cloneOptions: CloneOptions = {
     '--depth': 1,
     '--branch': 'main',
@@ -104,13 +104,20 @@ async function createAction() {
       const run = await p.confirm({
         message: '🚀 Do you want to start the development server now?',
       })
-      if (run) {
-        // TODO run command
+      if (!run) {
         p.outro(`Run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        process.exit(0)
       }
-      else {
-        p.outro(`Run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+      // 3. start development server
+      p.log.step('Starting the development server...')
+      if (!shell.which('hugo')) {
+        p.log.error(`${c.red('Hugo is not installed. You need to install Hugo to start this project!')}`)
+        p.outro(`After installing Hugo, run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        process.exit(1)
       }
+      p.outro(`> ${c.blue(`cd ${answers.name} && hugo server -O`)}`)
+      shell.cd(answers.name)
+      shell.exec('hugo server -O')
     })
   })
 }
@@ -127,6 +134,7 @@ function checkAction() {
     .then(({ version, changelog, homeUrl }) => {
       spinner.stop(`${c.green('✔')} The latest version of FixIt theme is ${c.blue(version)}.`, 0)
       p.log.info(`Release Notes: ${c.cyan(homeUrl)}\n\n${changelog.split('\n').map(line => c.gray(line)).join('\n')}`)
+      // TODO run command to update theme
       p.log.step(
         `You can use commands below to update FixIt theme to the latest version.\n`
         + `${c.gray('Hugo module:')}\n`
@@ -135,7 +143,6 @@ function checkAction() {
         + `${c.gray('Git submodule:')}\n`
         + `  ${c.blue('git submodule update --remote --merge themes/FixIt')}\n`,
       )
-      // TODO run command to update theme
     })
     .catch((error: Error) => {
       // TODO [Failed]、[Note] 等使用反色标记
