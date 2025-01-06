@@ -88,6 +88,8 @@ async function createAction() {
       spinnerInit.message(`${c.green('✔')} removed remote origin.`)
     })
     spinnerInit.message('Removing history commits.')
+    // TODO read TOML file and modify baseURL parameter
+    // author info, site time, etc.
     // remove history commits
     git.raw(['update-ref', '-d', 'HEAD'], (err) => {
       if (err) {
@@ -113,6 +115,7 @@ async function createAction() {
       if (!shell.which('hugo')) {
         p.log.error(`${c.red('Hugo is not installed. You need to install Hugo to start this project!')}`)
         p.outro(`After installing Hugo, run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        // TODO install hugo-bin or hugo-extended automatically
         process.exit(1)
       }
       p.outro(`> ${c.blue(`cd ${answers.name} && hugo server -O`)}`)
@@ -132,9 +135,8 @@ function checkAction() {
   spinner.start('Checking the latest version of FixIt theme.')
   getLatestRelease('hugo-fixit', 'FixIt')
     .then(({ version, changelog, homeUrl }) => {
-      spinner.stop(`${c.green('✔')} The latest version of FixIt theme is ${c.blue(version)}.`, 0)
       p.log.info(`Release Notes: ${c.cyan(homeUrl)}\n\n${changelog.split('\n').map(line => c.gray(line)).join('\n')}`)
-      // TODO run command to update theme
+      spinner.stop(`${c.green('✔')} The latest version of FixIt theme is ${c.blue(version)}.`, 0)
       p.log.step(
         `You can use commands below to update FixIt theme to the latest version.\n`
         + `${c.gray('Hugo module:')}\n`
@@ -145,10 +147,9 @@ function checkAction() {
       )
     })
     .catch((error: Error) => {
-      // TODO [Failed]、[Note] 等使用反色标记
-      spinner.stop(`${c.red('[Failed]')} failed to check the latest version of FixIt theme.`, -1)
       p.log.error(c.red(error.message))
-      p.log.step(`\n${c.green('[Note]')} You can set GITHUB_TOKEN env to avoid GitHub API rate limit.\nRun command ${c.blue('fixit help check')} for more details.\n`)
+      spinner.stop(`${c.red('✘')} failed to check the latest version of FixIt theme.`, -1)
+      p.log.step(`You can set GITHUB_TOKEN env to avoid GitHub API rate limit.\nRun command ${c.blue('fixit help check')} for more details.\n`)
       process.exit(1)
     })
 }
