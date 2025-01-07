@@ -23,7 +23,11 @@ import {
  * @example fixit create [project-name]
  */
 async function createAction() {
-  timer.start('Creating a new FixIt project')
+  timer.start('Creating a new FixIt project step by step!')
+  const repositories = {
+    go: 'https://github.com/hugo-fixit/hugo-fixit-starter.git',
+    git: 'https://github.com/hugo-fixit/hugo-fixit-starter1.git',
+  }
   const answers = await p.group(
     {
       name: () => p.text({
@@ -67,9 +71,18 @@ async function createAction() {
       },
     },
   )
-  const repositories = {
-    go: 'https://github.com/hugo-fixit/hugo-fixit-starter.git',
-    git: 'https://github.com/hugo-fixit/hugo-fixit-starter1.git',
+  let hugoModulePath = ''
+  if (answers.template === 'go') {
+    hugoModulePath = await p.text({
+      message: 'Please input module path:',
+      placeholder: 'e.g. github.com/your_name/your_project',
+      initialValue: `github.com/${answers.authorName || 'your_name'}/${answers.name}`,
+      validate: (val: string) => {
+        if (val === '') {
+          return 'module path is required!'
+        }
+      },
+    }) as string
   }
   p.log.step(`Initializing FixIt project ${answers.name}, please wait a moment...`)
   // 1. download template
@@ -110,6 +123,27 @@ async function createAction() {
       }
       spinnerInit.message(`${c.green('✔')} removed remote origin.`)
     })
+    // initialize Hugo module
+    if (answers.template === 'go') {
+      spinnerInit.message('Initializing Hugo module.')
+      // go.mod
+      const goMod = join(process.cwd(), answers.name, 'go.mod')
+      fs.readFile(goMod, 'utf8', (err, data) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        spinnerInit.message('Modifying module path in go.mod.')
+        const result = data.replace(/module .*/, `module ${hugoModulePath}`)
+        fs.writeFile(goMod, result, 'utf8', (err) => {
+          if (err) {
+            spinnerInit.stop(err.message, -1)
+            return
+          }
+          spinnerInit.message(`${c.green('✔')} modified module path in go.mod.`)
+        })
+      })
+    }
     // initialize hugo config
     const hugoToml = join(process.cwd(), answers.name, 'config/_default/hugo.toml')
     fs.readFile(hugoToml, 'utf8', (err, data) => {
