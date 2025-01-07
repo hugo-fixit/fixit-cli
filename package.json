@@ -49,7 +49,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^3.12.1",
     "@hugo-fixit/fixit-releaser": "^1.0.3",
-    "@types/node": "^22.10.4",
+    "@types/node": "^22.10.5",
     "@types/shelljs": "^0.8.15",
     "eslint": "^9.17.0",
     "typescript": "^5.7.2"
