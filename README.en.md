@@ -14,13 +14,17 @@
 
 If you use the [Hugo Modules](https://gohugo.io/hugo-modules/) feature to load the theme, you will also need to install [Go](https://go.dev/dl/).
 
-## Installation
+## Usage
+
+It is very convenient to create a new FixIt project by running `fixit-cli` directly using [`pnpx`](https://pnpm.io/cli/dlx) or [`npx`](https://docs.npmjs.com/cli/v11/commands/npx). Of course, you can also install `fixit-cli` globally and use the `fixit` command.
+
+For example, create a site called `my-blog`:
 
 ```bash
-npm install -g fixit-cli
+pnpx fixit-cli create my-blog
 ```
 
-## Usage
+For more usage, please refer to the help information below:
 
 ```plain
 Usage: fixit <command> [options]
@@ -35,22 +39,37 @@ Commands:
   help <command>         display help for a specific command
 ```
 
-For example, create a site named `my-blog`:
-
-```bash
-fixit create my-blog
-```
-
 ## Development
 
+Install dependencies:
+
 ```bash
-npm install
-npm link
-npm unlink fixit
-npm run start -- -h
+pnpm install
+```
+
+Run the CLI in development mode:
+
+```bash
+pnpm start -h
+```
+
+Link/Unlink the package to/from the global package directory:
+
+```bash
+pnpm link
+pnpm unlink fixit-cli
+```
+
+Install/uninstall the package globally from a local path:
+
+```bash
+pnpm add -g path/to/fixit-cli
+pnpm remove -g fixit-cli
 ```
 
 ## Related Projects
+
+This CLI tool is developed based on the following projects:
 
 - [FixIt](https://github.com/hugo-fixit/FixIt)
 - [hugo-fixit-starter](https://github.com/hugo-fixit/hugo-fixit-starter)
