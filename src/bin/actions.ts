@@ -11,13 +11,17 @@ import {
   CleanOptions,
   simpleGit,
 } from 'simple-git'
-import { getLatestRelease } from '../lib/utils.js'
+import {
+  getLatestRelease,
+  timer,
+} from '../lib/utils.js'
 
 /**
  * action for create command
  * @example fixit create [project-name]
  */
 async function createAction() {
+  timer.start()
   const answers = await p.group(
     {
       name: () => p.text({
@@ -107,18 +111,21 @@ async function createAction() {
         message: '🚀 Do you want to start the development server now?',
       })
       if (!run) {
-        p.outro(`Run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        p.log.info(`Run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        p.outro(`Done in ${timer.stop() / 1000}s`)
         process.exit(0)
       }
       // 3. start development server
       p.log.step('Starting the development server...')
       if (!shell.which('hugo')) {
         p.log.error(`${c.red('Hugo is not installed. You need to install Hugo to start this project!')}`)
-        p.outro(`After installing Hugo, run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        p.log.info(`After installing Hugo, run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
         // TODO install hugo-bin or hugo-extended automatically
+        p.outro(`Done in ${timer.stop() / 1000}s`)
         process.exit(1)
       }
-      p.outro(`> ${c.blue(`cd ${answers.name} && hugo server -O`)}`)
+      p.log.info(`> ${c.blue(`cd ${answers.name} && hugo server -O`)}`)
+      p.outro(`Done in ${timer.stop() / 1000}s`)
       shell.cd(answers.name)
       shell.exec('hugo server -O')
     })
@@ -131,6 +138,7 @@ async function createAction() {
  * @example GITHUB_TOKEN=ghp_ifbeKixxxxxxxxxxxxxxxxxxxxxxxx0gVAgF fixit check
  */
 function checkAction() {
+  timer.start()
   const spinner = p.spinner()
   spinner.start('Checking the latest version of FixIt theme.')
   getLatestRelease('hugo-fixit', 'FixIt')
@@ -143,8 +151,9 @@ function checkAction() {
         + `  ${c.blue(`hugo mod get -u github.com/hugo-fixit/FixIt@${version}`)}\n`
         + `  ${c.blue('hugo mod tidy')}\n`
         + `${c.gray('Git submodule:')}\n`
-        + `  ${c.blue('git submodule update --remote --merge themes/FixIt')}\n`,
+        + `  ${c.blue('git submodule update --remote --merge themes/FixIt')}`,
       )
+      p.outro(`Done in ${timer.stop() / 1000}s`)
     })
     .catch((error: Error) => {
       p.log.error(c.red(error.message))
@@ -159,11 +168,12 @@ function checkAction() {
  * @param {string} command specific command
  * @example fixit help <command>
  */
-function helpAction(command: string) {
+async function helpAction(command: string) {
+  timer.start()
   switch (command) {
     case 'create':
       p.intro('Create a new FixIt project from a template based on Git submodule or Hugo module.')
-      p.log.info(`Usage: ${c.blue('fixit create <project-name>')}\n`)
+      p.log.info(`Usage: ${c.blue('fixit create <project-name>')}`)
       break
     case 'check':
       p.intro('Check the latest version of FixIt theme.')
@@ -172,17 +182,18 @@ function helpAction(command: string) {
         c.gray('You can set GITHUB_TOKEN env to avoid GitHub API rate limit.\n')
         + c.gray('Head to ')
         + c.cyan('https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token\n')
-        + c.gray('for guidance on how to create a personal access token.\n'),
+        + c.gray('for guidance on how to create a personal access token.'),
       )
       break
     case 'help':
       p.intro('Display help for a specific command.')
-      p.log.info(`Usage: ${c.blue('fixit help <command>')}\n`)
+      p.log.info(`Usage: ${c.blue('fixit help <command>')}`)
       break
     default:
       p.intro(`Unknown help topic ${c.red(command)}.`)
-      p.log.warn(`Refer to ${c.blue('fixit --help')} for supported commands.\n`)
+      p.log.warn(`Refer to ${c.blue('fixit --help')} for supported commands.`)
   }
+  p.outro(`Done in ${timer.stop() / 1000}s`)
 }
 
 export {

@@ -4,12 +4,6 @@ import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
-interface ReleaseInfo {
-  version: string
-  changelog: string
-  homeUrl: string
-}
-
 /**
  * import json file
  * @param {string} relativePath relative path to json file
@@ -72,7 +66,20 @@ function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseI
   })
 }
 
+const timer: Timer = {
+  __start: 0,
+  __end: 0,
+  start: (): void => {
+    timer.__start = Date.now()
+  },
+  stop: (): number => {
+    timer.__end = Date.now()
+    return timer.__end - timer.__start
+  },
+}
+
 export {
   getLatestRelease,
   importJson,
+  timer,
 }
