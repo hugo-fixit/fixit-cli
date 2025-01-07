@@ -7,6 +7,6 @@ declare interface ReleaseInfo {
 declare interface Timer {
   __start: number
   __end: number
-  start: () => void
+  start: (msg?: string) => void
   stop: () => number
 }

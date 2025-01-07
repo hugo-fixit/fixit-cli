@@ -3,6 +3,7 @@ import https from 'node:https'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { intro } from '@clack/prompts'
 
 /**
  * import json file
@@ -66,8 +67,9 @@ function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseI
 const timer: Timer = {
   __start: 0,
   __end: 0,
-  start: (): void => {
+  start: (msg): void => {
     timer.__start = Date.now()
+    msg && intro(msg)
   },
   stop: (): number => {
     timer.__end = Date.now()

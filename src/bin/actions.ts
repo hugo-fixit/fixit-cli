@@ -3,6 +3,8 @@ import type {
   SimpleGit,
   SimpleGitProgressEvent,
 } from 'simple-git'
+import fs from 'node:fs'
+import { join } from 'node:path'
 import process from 'node:process'
 import * as p from '@clack/prompts'
 import c from 'picocolors'
@@ -21,7 +23,7 @@ import {
  * @example fixit create [project-name]
  */
 async function createAction() {
-  timer.start()
+  timer.start('Creating a new FixIt project')
   const answers = await p.group(
     {
       name: () => p.text({
@@ -40,6 +42,22 @@ async function createAction() {
           { value: 'go', label: 'Hugo module based' },
           { value: 'git', label: 'Git submodule based' },
         ],
+      }),
+      blogTitle: () => p.text({
+        message: 'Please input your blog title:',
+        placeholder: '[blog title]',
+      }),
+      authorName: () => p.text({
+        message: 'Please input your name:',
+        placeholder: '[author name]',
+      }),
+      authorEmail: () => p.text({
+        message: 'Please input your email:',
+        placeholder: '[author email]',
+      }),
+      authorLink: () => p.text({
+        message: 'Please input your link:',
+        placeholder: '[author link]',
       }),
     },
     {
@@ -77,6 +95,7 @@ async function createAction() {
       return
     }
     spinnerClone.stop(`${c.green('✔')} Template downloaded from ${c.cyan(repositories[answers.template])}`, 0)
+    const siteTime = new Date().toISOString()
 
     // 2. initialize FixIt project
     const spinnerInit = p.spinner()
@@ -91,10 +110,79 @@ async function createAction() {
       }
       spinnerInit.message(`${c.green('✔')} removed remote origin.`)
     })
-    spinnerInit.message('Removing history commits.')
-    // TODO read TOML file and modify baseURL parameter
-    // author info, site time, etc.
+    // initialize hugo config
+    const hugoToml = join(process.cwd(), answers.name, 'config/_default/hugo.toml')
+    fs.readFile(hugoToml, 'utf8', (err, data) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      spinnerInit.message('Modifying baseURL parameter in hugo.toml.')
+      let result = data.replace(/baseURL = ".*"/, 'baseURL = "https://example.org/"')
+      if (answers.blogTitle) {
+        spinnerInit.message('Modifying title parameter in hugo.toml.')
+        result = result.replace(/title = ".*"/, `title = "${answers.blogTitle}"`)
+      }
+      fs.writeFile(hugoToml, result, 'utf8', (err) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        spinnerInit.message(`${c.green('✔')} modified baseURL and title in hugo.toml.`)
+      })
+    })
+    // initialize Fixit params.toml
+    const paramsToml = join(process.cwd(), answers.name, 'config/_default/params.toml')
+    fs.readFile(paramsToml, 'utf8', (err, data) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      spinnerInit.message('Modifying site time in params.toml.')
+      let result = data.replace(
+        /value = "" # e.g. "2021-12-18T16:15:22\+08:00"/,
+        `value = "${siteTime}" # e.g. "2021-12-18T16:15:22+08:00"`,
+      )
+      result = result.replace(/since = \d+/, `since = ${new Date().getFullYear()}`)
+      if (answers.authorName || answers.authorEmail || answers.authorLink) {
+        spinnerInit.message('Modifying author info in params.toml.')
+        result = result.replace(
+          /\[author\]\n.*\n.*\n.*\n/,
+          `[author]\n  name = "${answers.authorName || ''}"\n  email = "${answers.authorEmail || ''}"\n  link = "${answers.authorLink || ''}"\n`,
+        )
+      }
+      spinnerInit.message('Modifying logo in params.toml.')
+      result = result.replace(/logo = ".*"/, 'logo = "/images/fixit.min.svg"')
+      fs.writeFile(paramsToml, result, 'utf8', (err) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        spinnerInit.message(`${c.green('✔')} modified site time and author info etc. in params.toml.`)
+      })
+    })
+    // initialize hello world post create time
+    const helloMd = join(process.cwd(), answers.name, 'content/posts/hello-world.md')
+    fs.readFile(helloMd, 'utf8', (err, data) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      spinnerInit.message('Modifying create time in hello-world.md.')
+      const result = data.replace(
+        /date: .*/,
+        `date: ${siteTime}`,
+      )
+      fs.writeFile(helloMd, result, 'utf8', (err) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        spinnerInit.message(`${c.green('✔')} modified create time in hello-world.md.`)
+      })
+    })
     // remove history commits
+    spinnerInit.message('Removing history commits.')
     git.raw(['update-ref', '-d', 'HEAD'], (err) => {
       if (err) {
         spinnerInit.stop(err.message, -1)
@@ -120,8 +208,8 @@ async function createAction() {
       if (!shell.which('hugo')) {
         p.log.error(`${c.red('Hugo is not installed. You need to install Hugo to start this project!')}`)
         p.log.info(`After installing Hugo, run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
-        // TODO install hugo-bin or hugo-extended automatically
         p.outro(`Done in ${timer.stop() / 1000}s`)
+        // TODO install hugo-bin or hugo-extended automatically
         process.exit(1)
       }
       p.log.info(`> ${c.blue(`cd ${answers.name} && hugo server -O`)}`)
@@ -138,7 +226,7 @@ async function createAction() {
  * @example GITHUB_TOKEN=ghp_ifbeKixxxxxxxxxxxxxxxxxxxxxxxx0gVAgF fixit check
  */
 function checkAction() {
-  timer.start()
+  timer.start('Checking for updates')
   const spinner = p.spinner()
   spinner.start('Checking the latest version of FixIt theme.')
   getLatestRelease('hugo-fixit', 'FixIt')
@@ -168,7 +256,7 @@ function checkAction() {
  * @param {string} command specific command
  * @example fixit help <command>
  */
-async function helpAction(command: string) {
+function helpAction(command: string) {
   timer.start()
   switch (command) {
     case 'create':
