@@ -10,11 +10,8 @@ import { fileURLToPath } from 'node:url'
  * @returns {any} json object
  */
 function importJson(relativePath: string): any {
-  const moduleURL = new URL(import.meta.url)
-  const modulePath = fileURLToPath(moduleURL)
-  const basePath = dirname(modulePath)
-  const filePath = join(basePath, relativePath)
-  const fileContent = readFileSync(filePath, 'utf8')
+  const rootPath = dirname(fileURLToPath(new URL(import.meta.url))).replace(/\/dist\/lib$/, '')
+  const fileContent = readFileSync(join(rootPath, relativePath), 'utf8')
   return JSON.parse(fileContent)
 }
 

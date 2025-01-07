@@ -10,7 +10,7 @@ import {
   helpAction,
 } from './actions.js'
 
-const pkg = importJson('../../package.json')
+const pkg = importJson('/package.json')
 const program = new Command()
 const logo = `
 =============================================
