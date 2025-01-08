@@ -285,41 +285,7 @@ function checkAction() {
     })
 }
 
-/**
- * action for help command
- * @param {string} command specific command
- * @example fixit help <command>
- */
-function helpAction(command: string) {
-  timer.start()
-  switch (command) {
-    case 'create':
-      p.intro('Create a new FixIt project from a template based on Git submodule or Hugo module.')
-      p.log.info(`Usage: ${c.blue('fixit create <project-name>')}`)
-      break
-    case 'check':
-      p.intro('Check the latest version of FixIt theme.')
-      p.log.info(`Usage: ${c.blue('[GITHUB_TOKEN=xxx] fixit check')}`)
-      p.log.step(
-        c.gray('You can set GITHUB_TOKEN env to avoid GitHub API rate limit.\n')
-        + c.gray('Head to ')
-        + c.cyan('https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token\n')
-        + c.gray('for guidance on how to create a personal access token.'),
-      )
-      break
-    case 'help':
-      p.intro('Display help for a specific command.')
-      p.log.info(`Usage: ${c.blue('fixit help <command>')}`)
-      break
-    default:
-      p.intro(`Unknown help topic ${c.red(command)}.`)
-      p.log.warn(`Refer to ${c.blue('fixit --help')} for supported commands.`)
-  }
-  p.outro(`Done in ${timer.stop() / 1000}s`)
-}
-
 export {
   checkAction,
   createAction,
-  helpAction,
 }

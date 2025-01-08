@@ -1,7 +1,6 @@
 import {
   checkAction,
   createAction,
-  helpAction,
 } from './bin/actions.js'
 import {
   getLatestRelease,
@@ -12,14 +11,12 @@ export {
   checkAction,
   createAction,
   getLatestRelease,
-  helpAction,
   importJson,
 }
 
 export default {
   createAction,
   checkAction,
-  helpAction,
   importJson,
   getLatestRelease,
 }

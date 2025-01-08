@@ -7,7 +7,6 @@ import { importJson } from '../lib/utils.js'
 import {
   checkAction,
   createAction,
-  helpAction,
 } from './actions.js'
 
 const pkg = importJson('/package.json')
@@ -36,14 +35,12 @@ program
   .command('create <project-name>')
   .description('create a new FixIt project from a template')
   .action(createAction)
+  .helpOption(false)
 program
   .command('check')
   .description('check the latest version of FixIt theme')
   .action(checkAction)
-program
-  .command('help <command>')
-  .description('display help for a specific command')
-  .action(helpAction)
+  .helpOption(false)
 
 // define cli
 program
