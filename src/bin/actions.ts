@@ -20,9 +20,10 @@ import {
 
 /**
  * action for create command
+ * @param {string} projectName project name
  * @example fixit create [project-name]
  */
-async function createAction() {
+async function createAction(projectName: string) {
   timer.start('Creating a new FixIt project step by step!')
   const repositories = {
     go: 'https://github.com/hugo-fixit/hugo-fixit-starter.git',
@@ -32,11 +33,11 @@ async function createAction() {
     {
       name: () => p.text({
         message: 'Please input project name:',
-        placeholder: 'project name',
-        initialValue: process.argv[3] || '',
+        placeholder: 'FixIt project name, e.g. `my-blog`',
+        initialValue: projectName || '',
         validate: (val: string) => {
           if (val === '') {
-            return 'project name is required!'
+            return 'FixIt project name is required!'
           }
         },
       }),

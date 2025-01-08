@@ -32,15 +32,17 @@ Complete documentation is available at ${c.cyan('https://fixit.lruihao.cn/')}.`
 
 // define commands
 program
-  .command('create <project-name>')
+  .command('create')
+  .alias('new')
   .description('create a new FixIt project from a template')
-  .action(createAction)
+  .argument('[project-name]', 'FixIt project name, e.g. `my-blog`')
   .helpOption(false)
+  .action(createAction)
 program
   .command('check')
   .description('check the latest version of FixIt theme')
-  .action(checkAction)
   .helpOption(false)
+  .action(checkAction)
 
 // define cli
 program
@@ -49,4 +51,5 @@ program
   .description(description)
   .version(`${pkg.name} v${pkg.version}`, '-v, --version')
   .showHelpAfterError()
+  // .action(createAction)
   .parse(process.argv)
