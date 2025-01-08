@@ -6,6 +6,8 @@
 
 🛠️ A node-based tooling for [FixIt](https://github.com/hugo-fixit/FixIt) site initialization.
 
+[![asciicast](fixit-cli.gif)](https://asciinema.org/a/697494)
+
 ## System Requirements
 
 - [Node.js](https://nodejs.org/) (>= 18)
@@ -26,17 +28,39 @@ pnpx fixit-cli create my-blog
 
 For more usage, please refer to the help information below:
 
+```bash
+pnpx fixit-cli -h
+```
+
 ```plain
 Usage: fixit <command> [options]
 
+=============================================
+
+        ▄████  ▄█     ▄  ▄█    ▄▄▄▄▀
+        █▀   ▀ ██ ▀▄   █ ██ ▀▀▀ █
+        █▀▀    ██   █ ▀  ██     █
+        █      ▐█  ▄ █   ▐█    █
+         █      ▐ █   ▀▄  ▐   ▀
+          ▀        ▀
+              fixit-cli v1.2.1
+         A cli tool for FixIt theme.
+
+=============================================
+
+FixIt is a clean, elegant but advanced blog theme for Hugo
+built with love by Lruihao and his friends.
+
+Complete documentation is available at https://fixit.lruihao.cn/.
+
 Options:
-  -v, --version          output the version number
-  -h, --help             display help for command
+  -v, --version              output the version number
+  -h, --help                 display help for command
 
 Commands:
-  create <project-name>  create a new FixIt project from a template
-  check                  check the latest version of FixIt theme
-  help <command>         display help for a specific command
+  create|new [project-name]  create a new FixIt project from a template
+  check                      check the latest version of FixIt theme
+  help [command]             display help for command
 ```
 
 ## Development
