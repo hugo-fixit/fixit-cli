@@ -265,7 +265,7 @@ function checkAction() {
   const spinner = p.spinner()
   spinner.start('Checking the latest version of FixIt theme.')
   getLatestRelease('hugo-fixit', 'FixIt')
-    .then(({ version, changelog, homeUrl }) => {
+    .then(({ version, changelog, homeUrl }: ReleaseInfo) => {
       p.log.info(`Release Notes: ${c.cyan(homeUrl)}\n\n${changelog.split('\n').map(line => c.gray(line)).join('\n')}`)
       spinner.stop(`${c.green('✔')} The latest version of FixIt theme is ${c.blue(version)}.`, 0)
       p.log.step(

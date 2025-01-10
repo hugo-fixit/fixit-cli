@@ -5,6 +5,7 @@
     "module": "es2020",
     "moduleResolution": "node",
     "strict": true,
+    "declaration": true,
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

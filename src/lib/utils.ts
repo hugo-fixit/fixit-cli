@@ -5,6 +5,19 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { intro } from '@clack/prompts'
 
+interface ReleaseInfo {
+  version: string
+  changelog: string
+  homeUrl: string
+}
+
+interface Timer {
+  __start: number
+  __end: number
+  start: (msg?: string) => void
+  stop: () => number
+}
+
 /**
  * import json file
  * @param {string} relativePath relative path to json file
@@ -80,5 +93,7 @@ const timer: Timer = {
 export {
   getLatestRelease,
   importJson,
+  ReleaseInfo,
   timer,
+  Timer,
 }
