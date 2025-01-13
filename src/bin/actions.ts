@@ -15,6 +15,7 @@ import {
 } from 'simple-git'
 import {
   getLatestRelease,
+  type ReleaseInfo,
   timer,
 } from '../lib/utils.js'
 
@@ -85,7 +86,29 @@ async function createAction(projectName: string) {
       },
     }) as string
   }
-  p.log.step(`Initializing FixIt project ${answers.name}, please wait a moment...`)
+  // check if target directory is empty
+  let targetDir = answers.name
+  if (fs.existsSync(answers.name)) {
+    const action = await p.select({
+      message: `Target Directory ${answers.name} is not empty. Please choose how to proceed:`,
+      options: [
+        { value: 'cancel', label: 'Cancel operation' },
+        { value: 'rename', label: 'Rename target directory' },
+        { value: 'remove', label: 'Remove existing files and continue' },
+      ],
+    })
+    if (action === 'cancel' || p.isCancel(action)) {
+      p.cancel('Operation cancelled.')
+      process.exit(0)
+    }
+    if (action === 'rename') {
+      targetDir = `${answers.name}-${Date.now().toString(36)}`
+    }
+    else if (action === 'remove') {
+      shell.rm('-rf', answers.name)
+    }
+  }
+  p.log.step(`Initializing FixIt project ${targetDir}, please wait a moment...`)
   // 1. download template
   const spinnerClone = p.spinner()
   spinnerClone.start(`Template downloading from ${c.cyan(repositories[answers.template])}.`)
@@ -103,7 +126,7 @@ async function createAction(projectName: string) {
     cloneOptions['--recurse-submodules'] = undefined
     cloneOptions['--shallow-submodules'] = undefined
   }
-  git.clone(repositories[answers.template], answers.name, cloneOptions, (err) => {
+  git.clone(repositories[answers.template], targetDir, cloneOptions, (err) => {
     if (err) {
       spinnerClone.stop(err.message, -1)
       return
@@ -113,9 +136,9 @@ async function createAction(projectName: string) {
 
     // 2. initialize FixIt project
     const spinnerInit = p.spinner()
-    spinnerInit.start(`Initializing FixIt project ${answers.name}.`)
+    spinnerInit.start(`Initializing FixIt project ${targetDir}.`)
     // remove remote origin
-    git.cwd(answers.name)
+    git.cwd(targetDir)
     spinnerInit.message('Removing remote origin.')
     git.removeRemote('origin', (err) => {
       if (err) {
@@ -128,7 +151,7 @@ async function createAction(projectName: string) {
     if (answers.template === 'go') {
       spinnerInit.message('Initializing Hugo module.')
       // go.mod
-      const goMod = join(process.cwd(), answers.name, 'go.mod')
+      const goMod = join(process.cwd(), targetDir, 'go.mod')
       fs.readFile(goMod, 'utf8', (err, data) => {
         if (err) {
           spinnerInit.stop(err.message, -1)
@@ -146,7 +169,7 @@ async function createAction(projectName: string) {
       })
     }
     // initialize hugo config
-    const hugoToml = join(process.cwd(), answers.name, 'config/_default/hugo.toml')
+    const hugoToml = join(process.cwd(), targetDir, 'config/_default/hugo.toml')
     fs.readFile(hugoToml, 'utf8', (err, data) => {
       if (err) {
         spinnerInit.stop(err.message, -1)
@@ -167,7 +190,7 @@ async function createAction(projectName: string) {
       })
     })
     // initialize Fixit params.toml
-    const paramsToml = join(process.cwd(), answers.name, 'config/_default/params.toml')
+    const paramsToml = join(process.cwd(), targetDir, 'config/_default/params.toml')
     fs.readFile(paramsToml, 'utf8', (err, data) => {
       if (err) {
         spinnerInit.stop(err.message, -1)
@@ -197,7 +220,7 @@ async function createAction(projectName: string) {
       })
     })
     // initialize hello world post create time
-    const helloMd = join(process.cwd(), answers.name, 'content/posts/hello-world.md')
+    const helloMd = join(process.cwd(), targetDir, 'content/posts/hello-world.md')
     fs.readFile(helloMd, 'utf8', (err, data) => {
       if (err) {
         spinnerInit.stop(err.message, -1)
@@ -228,13 +251,13 @@ async function createAction(projectName: string) {
       // commit first commit
       await git.add('./*')
       await git.commit('first commit')
-      spinnerInit.stop(`${c.green('✔')} FixIt project ${answers.name} initialized!`, 0)
+      spinnerInit.stop(`${c.green('✔')} FixIt project ${targetDir} initialized!`, 0)
       p.log.success('🎉 Congratulations! You have created a new FixIt project.')
       const run = await p.confirm({
         message: '🚀 Do you want to start the development server now?',
       })
       if (!run) {
-        p.log.info(`Run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        p.log.info(`Run ${c.blue(`cd ${targetDir} && hugo server -O`)} to start the development server.`)
         p.outro(`Done in ${timer.stop() / 1000}s`)
         process.exit(0)
       }
@@ -242,14 +265,14 @@ async function createAction(projectName: string) {
       p.log.step('Starting the development server...')
       if (!shell.which('hugo')) {
         p.log.error(`${c.red('Hugo is not installed. You need to install Hugo to start this project!')}`)
-        p.log.info(`After installing Hugo, run ${c.blue(`cd ${answers.name} && hugo server -O`)} to start the development server.`)
+        p.log.info(`After installing Hugo, run ${c.blue(`cd ${targetDir} && hugo server -O`)} to start the development server.`)
         p.outro(`Done in ${timer.stop() / 1000}s`)
         // TODO install hugo-bin or hugo-extended automatically
         process.exit(1)
       }
-      p.log.info(`> ${c.blue(`cd ${answers.name} && hugo server -O`)}`)
+      p.log.info(`> ${c.blue(`cd ${targetDir} && hugo server -O`)}`)
       p.outro(`Done in ${timer.stop() / 1000}s`)
-      shell.cd(answers.name)
+      shell.cd(targetDir)
       shell.exec('hugo server -O')
     })
   })
