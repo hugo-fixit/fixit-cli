@@ -34,7 +34,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "tsx ./src/bin/cli.ts",
+    "start": "tsc && node ./dist/bin/cli.js",
+    "dev": "tsx ./src/bin/cli.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "release": "fixit-releaser changelog"
