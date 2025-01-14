@@ -30,13 +30,18 @@ interface Spinner {
 }
 
 /**
+ * The root directory of the project, determined by resolving the path of the current module
+ * and navigating two levels up the directory tree.
+ */
+const __root = join(dirname(fileURLToPath(import.meta.url)), '../..')
+
+/**
  * import json file
  * @param {string} relativePath relative path to json file
  * @returns {any} json object
  */
 function importJson(relativePath: string): any {
-  const rootPath = dirname(fileURLToPath(new URL(import.meta.url))).replace(/\/dist\/lib$/, '')
-  const fileContent = readFileSync(join(rootPath, relativePath), 'utf8')
+  const fileContent = readFileSync(join(__root, relativePath), 'utf8')
   return JSON.parse(fileContent)
 }
 

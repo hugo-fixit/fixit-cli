@@ -34,7 +34,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node ./dist/bin/cli.js",
+    "start": "tsx ./src/bin/cli.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "release": "fixit-releaser changelog"
@@ -52,6 +52,7 @@
     "@types/node": "^22.10.5",
     "@types/shelljs": "^0.8.15",
     "eslint": "^9.17.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }
