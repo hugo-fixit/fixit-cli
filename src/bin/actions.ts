@@ -16,7 +16,9 @@ import {
 import {
   getLatestRelease,
   handleTargetDir,
+  modifyFile,
   type ReleaseInfo,
+  removeRemoteOrigin,
   timer,
 } from '../lib/utils.js'
 
@@ -119,106 +121,45 @@ async function createAction(projectName: string) {
     spinnerInit.start(`Initializing FixIt project ${targetDir}.`)
     // remove remote origin
     git.cwd(targetDir)
-    spinnerInit.message('Removing remote origin.')
-    git.removeRemote('origin', (err) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
-      spinnerInit.message(`${c.green('✔')} removed remote origin.`)
-    })
+    removeRemoteOrigin(git, spinnerInit)
     // initialize Hugo module
     if (answers.template === 'go') {
       spinnerInit.message('Initializing Hugo module.')
-      // go.mod
       const goMod = join(process.cwd(), targetDir, 'go.mod')
-      fs.readFile(goMod, 'utf8', (err, data) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        spinnerInit.message('Modifying module path in go.mod.')
-        const result = data.replace(/module .*/, `module ${hugoModulePath}`)
-        fs.writeFile(goMod, result, 'utf8', (err) => {
-          if (err) {
-            spinnerInit.stop(err.message, -1)
-            return
-          }
-          spinnerInit.message(`${c.green('✔')} modified module path in go.mod.`)
-        })
-      })
+      modifyFile(goMod, data => data.replace(/module .*/, `module ${hugoModulePath}`), spinnerInit, 'Modifying module path in go.mod.')
     }
     // initialize hugo config
     const hugoToml = join(process.cwd(), targetDir, 'config/_default/hugo.toml')
-    fs.readFile(hugoToml, 'utf8', (err, data) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
-      spinnerInit.message('Modifying baseURL parameter in hugo.toml.')
+    modifyFile(hugoToml, (data) => {
       let result = data.replace(/baseURL = ".*"/, 'baseURL = "https://example.org/"')
       if (answers.blogTitle) {
-        spinnerInit.message('Modifying title parameter in hugo.toml.')
         result = result.replace(/title = ".*"/, `title = "${answers.blogTitle}"`)
       }
-      fs.writeFile(hugoToml, result, 'utf8', (err) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        spinnerInit.message(`${c.green('✔')} modified baseURL and title in hugo.toml.`)
-      })
-    })
+      return result
+    }, spinnerInit, 'Modifying baseURL and title in hugo.toml.')
     // initialize Fixit params.toml
     const paramsToml = join(process.cwd(), targetDir, 'config/_default/params.toml')
-    fs.readFile(paramsToml, 'utf8', (err, data) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
-      spinnerInit.message('Modifying site time in params.toml.')
+    modifyFile(paramsToml, (data) => {
       let result = data.replace(
         /value = "" # e.g. "2021-12-18T16:15:22\+08:00"/,
         `value = "${siteTime}" # e.g. "2021-12-18T16:15:22+08:00"`,
       )
       result = result.replace(/since = \d+/, `since = ${new Date().getFullYear()}`)
       if (answers.authorName || answers.authorEmail || answers.authorLink) {
-        spinnerInit.message('Modifying author info in params.toml.')
         result = result.replace(
           /\[author\]\n.*\n.*\n.*\n/,
           `[author]\n  name = "${answers.authorName || ''}"\n  email = "${answers.authorEmail || ''}"\n  link = "${answers.authorLink || ''}"\n`,
         )
       }
-      spinnerInit.message('Modifying logo in params.toml.')
       result = result.replace(/logo = ".*"/, 'logo = "/images/fixit.min.svg"')
-      fs.writeFile(paramsToml, result, 'utf8', (err) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        spinnerInit.message(`${c.green('✔')} modified site time and author info etc. in params.toml.`)
-      })
-    })
+      return result
+    }, spinnerInit, 'Modifying site time and author info etc. in params.toml.')
     // initialize hello world post create time
     const helloMd = join(process.cwd(), targetDir, 'content/posts/hello-world.md')
-    fs.readFile(helloMd, 'utf8', (err, data) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
-      spinnerInit.message('Modifying create time in hello-world.md.')
-      const result = data.replace(
-        /date: .*/,
-        `date: ${siteTime}`,
-      )
-      fs.writeFile(helloMd, result, 'utf8', (err) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        spinnerInit.message(`${c.green('✔')} modified create time in hello-world.md.`)
-      })
-    })
+    modifyFile(helloMd, data => data.replace(
+      /date: .*/,
+      `date: ${siteTime}`,
+    ), spinnerInit, 'Modifying create time in hello-world.md.')
     // remove history commits
     spinnerInit.message('Removing history commits.')
     git.raw(['update-ref', '-d', 'HEAD'], (err) => {
@@ -318,66 +259,21 @@ async function createComponentAction(componentName: string) {
     spinnerInit.start(`Initializing FixIt component ${targetDir}.`)
     // remove remote origin
     git.cwd(targetDir)
-    spinnerInit.message('Removing remote origin.')
-    git.removeRemote('origin', (err) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
-      spinnerInit.message(`${c.green('✔')} removed remote origin.`)
-    })
+    removeRemoteOrigin(git, spinnerInit)
     // initialize Hugo module
     spinnerInit.message('Initializing Hugo module.')
     const goMod = join(process.cwd(), targetDir, 'go.mod')
-    fs.readFile(goMod, 'utf8', (err, data) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
-      const result = data.replace(/module .*/, `module github.com/${answers.author}/${answers.name}`)
-      fs.writeFile(goMod, result, 'utf8', (err) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        spinnerInit.message(`${c.green('✔')} modified module path in go.mod.`)
-      })
-    })
+    modifyFile(goMod, data => data.replace(/module .*/, `module github.com/${answers.author}/${answers.name}`), spinnerInit, 'Modifying module path in go.mod.')
     // modify LICENSE
     const license = join(process.cwd(), targetDir, 'LICENSE')
-    fs.readFile(license, 'utf8', (err, data) => {
-      if (err) {
-        spinnerInit.stop(err.message, -1)
-        return
-      }
+    modifyFile(license, (data) => {
       const currentYear = new Date().getFullYear()
-      const result = data.replace(/Copyright \(c\) \d+ .*/, `Copyright (c) ${currentYear} ${answers.author} (https://github.com/${answers.author})`)
-      fs.writeFile(license, result, 'utf8', (err) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        spinnerInit.message(`${c.green('✔')} modified author in LICENSE.`)
-      })
-    })
+      return data.replace(/Copyright \(c\) \d+ .*/, `Copyright (c) ${currentYear} ${answers.author} (https://github.com/${answers.author})`)
+    }, spinnerInit, 'Modifying author in LICENSE.')
     // modify README.md and README.en.md
     for (const readmeFile of ['README.md', 'README.en.md']) {
       const readme = join(process.cwd(), targetDir, readmeFile)
-      fs.readFile(readme, 'utf8', (err, data) => {
-        if (err) {
-          spinnerInit.stop(err.message, -1)
-          return
-        }
-        const result = data.replace(/hugo-fixit\/\{component-xxx\}/g, `${answers.author}/${answers.name}`)
-          .replace(/\{component-xxx\}/g, answers.name)
-        fs.writeFile(readme, result, 'utf8', (err) => {
-          if (err) {
-            spinnerInit.stop(err.message, -1)
-            return
-          }
-          spinnerInit.message(`${c.green('✔')} modified author in ${readmeFile}.`)
-        })
-      })
+      modifyFile(readme, data => data.replace(/hugo-fixit\/\{component-xxx\}/g, `${answers.author}/${answers.name}`).replace(/\{component-xxx\}/g, answers.name), spinnerInit, `Modifying author in ${readmeFile}.`)
     }
     // 3. commit first commit and remove history commits
     spinnerInit.message('Removing history commits.')

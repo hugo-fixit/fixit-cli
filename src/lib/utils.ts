@@ -1,9 +1,13 @@
+import type {
+  SimpleGit,
+} from 'simple-git'
 import fs, { readFileSync } from 'node:fs'
 import https from 'node:https'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import * as p from '@clack/prompts'
+import c from 'picocolors'
 import shell from 'shelljs'
 
 interface ReleaseInfo {
@@ -17,6 +21,12 @@ interface Timer {
   __end: number
   start: (msg?: string) => void
   stop: () => number
+}
+
+interface Spinner {
+  start: (msg?: string) => void
+  stop: (msg?: string, code?: number) => void
+  message: (msg?: string) => void
 }
 
 /**
@@ -107,6 +117,51 @@ async function handleTargetDir(targetDir: string): Promise<string> {
   return Promise.resolve(targetDir)
 }
 
+/**
+ * Modify a file's content using a provided modification function
+ * @param {string} filePath Path to the file to be modified
+ * @param {(data: string) => string} modifyFn Function to modify the file content
+ * @param {Spinner} spinner Spinner instance to show progress
+ * @param {string} message Message to display during the modification
+ */
+async function modifyFile(filePath: string, modifyFn: (data: string) => string, spinner: Spinner, message: string) {
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      spinner.stop(err.message, -1)
+      return
+    }
+    spinner.message(message)
+    const result = modifyFn(data)
+    fs.writeFile(filePath, result, 'utf8', (err) => {
+      if (err) {
+        spinner.stop(err.message, -1)
+        return
+      }
+      spinner.message(`${c.green('✔')} ${message}`)
+    })
+  })
+}
+
+/**
+ * Remove the remote origin from a git repository
+ * @param {SimpleGit} git SimpleGit instance
+ * @param {Spinner} spinner Spinner instance to show progress
+ */
+async function removeRemoteOrigin(git: SimpleGit, spinner: Spinner) {
+  spinner.message('Removing remote origin.')
+  git.removeRemote('origin', (err) => {
+    if (err) {
+      spinner.stop(err.message, -1)
+      return
+    }
+    spinner.message(`${c.green('✔')} removed remote origin.`)
+  })
+}
+
+/**
+ * Timer object to measure elapsed time
+ * @type {Timer}
+ */
 const timer: Timer = {
   __start: 0,
   __end: 0,
@@ -124,7 +179,9 @@ export {
   getLatestRelease,
   handleTargetDir,
   importJson,
+  modifyFile,
   ReleaseInfo,
+  removeRemoteOrigin,
   timer,
   Timer,
 }
