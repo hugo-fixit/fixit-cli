@@ -1,9 +1,10 @@
-import { readFileSync } from 'node:fs'
+import fs, { readFileSync } from 'node:fs'
 import https from 'node:https'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { intro } from '@clack/prompts'
+import * as p from '@clack/prompts'
+import shell from 'shelljs'
 
 interface ReleaseInfo {
   version: string
@@ -77,12 +78,41 @@ function getLatestRelease(repoOwner: string, repoName: string): Promise<ReleaseI
   })
 }
 
+/**
+ * handle target directory
+ * @param {string} targetDir target directory
+ * @returns {Promise<string>} target directory
+ */
+async function handleTargetDir(targetDir: string): Promise<string> {
+  if (fs.existsSync(targetDir)) {
+    const action = await p.select({
+      message: `Target Directory ${targetDir} is not empty. Please choose how to proceed:`,
+      options: [
+        { value: 'cancel', label: 'Cancel operation' },
+        { value: 'rename', label: 'Rename target directory' },
+        { value: 'remove', label: 'Remove existing files and continue' },
+      ],
+    })
+    if (action === 'cancel' || p.isCancel(action)) {
+      p.cancel('Operation cancelled.')
+      process.exit(0)
+    }
+    if (action === 'rename') {
+      targetDir = `${targetDir}-${Date.now().toString(36)}`
+    }
+    else if (action === 'remove') {
+      shell.rm('-rf', targetDir)
+    }
+  }
+  return Promise.resolve(targetDir)
+}
+
 const timer: Timer = {
   __start: 0,
   __end: 0,
   start: (msg): void => {
     timer.__start = Date.now()
-    msg && intro(msg)
+    msg && p.intro(msg)
   },
   stop: (): number => {
     timer.__end = Date.now()
@@ -92,6 +122,7 @@ const timer: Timer = {
 
 export {
   getLatestRelease,
+  handleTargetDir,
   importJson,
   ReleaseInfo,
   timer,

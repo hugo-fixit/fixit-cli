@@ -15,6 +15,7 @@ import {
 } from 'simple-git'
 import {
   getLatestRelease,
+  handleTargetDir,
   type ReleaseInfo,
   timer,
 } from '../lib/utils.js'
@@ -86,28 +87,7 @@ async function createAction(projectName: string) {
       },
     }) as string
   }
-  // check if target directory is empty
-  let targetDir = answers.name
-  if (fs.existsSync(answers.name)) {
-    const action = await p.select({
-      message: `Target Directory ${answers.name} is not empty. Please choose how to proceed:`,
-      options: [
-        { value: 'cancel', label: 'Cancel operation' },
-        { value: 'rename', label: 'Rename target directory' },
-        { value: 'remove', label: 'Remove existing files and continue' },
-      ],
-    })
-    if (action === 'cancel' || p.isCancel(action)) {
-      p.cancel('Operation cancelled.')
-      process.exit(0)
-    }
-    if (action === 'rename') {
-      targetDir = `${answers.name}-${Date.now().toString(36)}`
-    }
-    else if (action === 'remove') {
-      shell.rm('-rf', answers.name)
-    }
-  }
+  const targetDir = await handleTargetDir(answers.name)
   p.log.step(`Initializing FixIt project ${targetDir}, please wait a moment...`)
   // 1. download template
   const spinnerClone = p.spinner()
@@ -279,6 +259,144 @@ async function createAction(projectName: string) {
 }
 
 /**
+ * action for create component subcommand
+ * clone https://github.com/hugo-fixit/component-skeleton
+ * @param {string} componentName component name
+ * @example fixit create component [component-name]
+ */
+async function createComponentAction(componentName: string) {
+  timer.start('Creating a new FixIt component step by step!')
+  const repository = 'https://github.com/hugo-fixit/component-skeleton'
+  const answers = await p.group(
+    {
+      name: () => p.text({
+        message: 'Please input component name:',
+        placeholder: 'Component name, e.g. `my-component`',
+        initialValue: componentName || '',
+        validate: (val: string) => {
+          if (val === '') {
+            return 'Component name is required!'
+          }
+        },
+      }),
+      author: () => p.text({
+        message: 'Please input your GitHub username:',
+        placeholder: 'GitHub username, e.g. `Lruihao`',
+        initialValue: 'hugo-fixit',
+        validate: (val: string) => {
+          if (val === '') {
+            return 'GitHub username is required!'
+          }
+        },
+      }),
+    },
+    {
+      onCancel: () => {
+        p.cancel('Operation cancelled.')
+        process.exit(0)
+      },
+    },
+  )
+  const targetDir = await handleTargetDir(answers.name)
+  p.log.step(`Initializing FixIt component ${targetDir}, please wait a moment...`)
+  // 1. download skeleton
+  const spinnerClone = p.spinner()
+  spinnerClone.start(`Skeleton downloading from ${c.cyan(repository)}.`)
+  const progress = ({ method, stage, progress }: SimpleGitProgressEvent) => {
+    spinnerClone.message(c.yellow(`git.${method} ${stage} stage ${progress}% complete${'.'.repeat(Math.floor(Math.random() * 3) + 1)}`))
+  }
+  const git: SimpleGit = simpleGit({ progress })
+  git.clean(CleanOptions.FORCE)
+  git.clone(repository, targetDir, { '--depth': 1, '--branch': 'main', '--single-branch': null }, (err) => {
+    if (err) {
+      spinnerClone.stop(err.message, -1)
+      return
+    }
+    spinnerClone.stop(`${c.green('✔')} Skeleton downloaded from ${c.cyan(repository)}`, 0)
+    // 2. initialize FixIt component
+    const spinnerInit = p.spinner()
+    spinnerInit.start(`Initializing FixIt component ${targetDir}.`)
+    // remove remote origin
+    git.cwd(targetDir)
+    spinnerInit.message('Removing remote origin.')
+    git.removeRemote('origin', (err) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      spinnerInit.message(`${c.green('✔')} removed remote origin.`)
+    })
+    // initialize Hugo module
+    spinnerInit.message('Initializing Hugo module.')
+    const goMod = join(process.cwd(), targetDir, 'go.mod')
+    fs.readFile(goMod, 'utf8', (err, data) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      const result = data.replace(/module .*/, `module github.com/${answers.author}/${answers.name}`)
+      fs.writeFile(goMod, result, 'utf8', (err) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        spinnerInit.message(`${c.green('✔')} modified module path in go.mod.`)
+      })
+    })
+    // modify LICENSE
+    const license = join(process.cwd(), targetDir, 'LICENSE')
+    fs.readFile(license, 'utf8', (err, data) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      const currentYear = new Date().getFullYear()
+      const result = data.replace(/Copyright \(c\) \d+ .*/, `Copyright (c) ${currentYear} ${answers.author} (https://github.com/${answers.author})`)
+      fs.writeFile(license, result, 'utf8', (err) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        spinnerInit.message(`${c.green('✔')} modified author in LICENSE.`)
+      })
+    })
+    // modify README.md and README.en.md
+    for (const readmeFile of ['README.md', 'README.en.md']) {
+      const readme = join(process.cwd(), targetDir, readmeFile)
+      fs.readFile(readme, 'utf8', (err, data) => {
+        if (err) {
+          spinnerInit.stop(err.message, -1)
+          return
+        }
+        const result = data.replace(/hugo-fixit\/\{component-xxx\}/g, `${answers.author}/${answers.name}`)
+          .replace(/\{component-xxx\}/g, answers.name)
+        fs.writeFile(readme, result, 'utf8', (err) => {
+          if (err) {
+            spinnerInit.stop(err.message, -1)
+            return
+          }
+          spinnerInit.message(`${c.green('✔')} modified author in ${readmeFile}.`)
+        })
+      })
+    }
+    // 3. commit first commit and remove history commits
+    spinnerInit.message('Removing history commits.')
+    git.raw(['update-ref', '-d', 'HEAD'], (err) => {
+      if (err) {
+        spinnerInit.stop(err.message, -1)
+        return
+      }
+      spinnerInit.message(`${c.green('✔')} removed history commits.`)
+    }).then(async () => {
+      await git.add('./*')
+      await git.commit('first commit')
+      spinnerInit.stop(`${c.green('✔')} FixIt component ${targetDir} initialized!`, 0)
+      p.log.success('🎉 Congratulations! You have created a new FixIt component.')
+      p.outro(`Done in ${timer.stop() / 1000}s`)
+    })
+  })
+}
+/**
  * action for check command
  * @example fixit check
  * @example GITHUB_TOKEN=ghp_ifbeKixxxxxxxxxxxxxxxxxxxxxxxx0gVAgF fixit check
@@ -312,4 +430,5 @@ function checkAction() {
 export {
   checkAction,
   createAction,
+  createComponentAction,
 }

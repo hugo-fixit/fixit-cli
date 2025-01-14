@@ -58,7 +58,7 @@ Options:
   -h, --help                 display help for command
 
 Commands:
-  create|new [project-name]  create a new FixIt project from a template
+  create|new [project-name]  create a new FixIt project/component from a template
   check                      check the latest version of FixIt theme
   help [command]             display help for command
 ```
@@ -98,6 +98,7 @@ This CLI tool is developed based on the following projects:
 - [FixIt](https://github.com/hugo-fixit/FixIt)
 - [hugo-fixit-starter](https://github.com/hugo-fixit/hugo-fixit-starter)
 - [hugo-fixit-starter1](https://github.com/hugo-fixit/hugo-fixit-starter1)
+- [component-skeleton](https://github.com/hugo-fixit/component-skeleton)
 
 ## Author
 

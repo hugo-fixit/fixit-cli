@@ -7,6 +7,7 @@ import { importJson } from '../lib/utils.js'
 import {
   checkAction,
   createAction,
+  createComponentAction,
 } from './actions.js'
 
 const pkg = importJson('/package.json')
@@ -30,14 +31,23 @@ FixIt is a clean, elegant but advanced blog theme for Hugo
 built with love by Lruihao and his friends.\n
 Complete documentation is available at ${c.cyan('https://fixit.lruihao.cn/')}.`
 
+// define subcommand `create component` under `create`
+const createComponentCmd = new Command('component')
+  .alias('cmpt')
+  .description('create a new component from a template')
+  .argument('[component-name]', 'name of the component to create')
+  .action(createComponentAction)
+
 // define commands
 program
   .command('create')
   .alias('new')
-  .description('create a new FixIt project from a template')
+  .usage('[project-name]|<command>')
+  .description('create a new FixIt project/component from a template')
   .argument('[project-name]', 'FixIt project name, e.g. `my-blog`')
   .helpOption(false)
   .action(createAction)
+  .addCommand(createComponentCmd)
 program
   .command('check')
   .description('check the latest version of FixIt theme')
