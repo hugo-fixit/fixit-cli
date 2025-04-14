@@ -41,19 +41,19 @@
     "release": "fixit-releaser changelog"
   },
   "dependencies": {
-    "@clack/prompts": "^0.10.0",
+    "@clack/prompts": "^0.10.1",
     "commander": "^13.1.0",
     "picocolors": "^1.1.1",
     "shelljs": "^0.8.5",
     "simple-git": "^3.27.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.5.1",
-    "@hugo-fixit/fixit-releaser": "^1.1.4",
-    "@types/node": "^22.13.9",
+    "@antfu/eslint-config": "^4.12.0",
+    "@hugo-fixit/fixit-releaser": "^1.1.5",
+    "@types/node": "^22.14.1",
     "@types/shelljs": "^0.8.15",
-    "eslint": "^9.21.0",
+    "eslint": "^9.24.0",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }
