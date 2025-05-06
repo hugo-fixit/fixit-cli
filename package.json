@@ -1,7 +1,7 @@
 {
   "name": "fixit-cli",
   "type": "module",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "packageManager": "pnpm@9.15.0",
   "description": "A cli tool for FixIt theme.",
   "author": "Lruihao (https://lruihao.cn)",
