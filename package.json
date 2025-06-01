@@ -44,7 +44,7 @@
     "@clack/prompts": "^0.10.1",
     "commander": "^13.1.0",
     "picocolors": "^1.1.1",
-    "shelljs": "^0.8.5",
+    "shelljs": "^0.10.0",
     "simple-git": "^3.27.0"
   },
   "devDependencies": {
