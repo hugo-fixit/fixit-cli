@@ -5,19 +5,19 @@
 
 version: 2
 updates:
-  - package-ecosystem: "github-actions" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: github-actions # See documentation for possible values
+    directory: / # Location of package manifests
     schedule:
-      interval: "monthly"
+      interval: quarterly
     open-pull-requests-limit: 1000
     assignees:
-      - "Lruihao"
+      - Lruihao
     labels:
-      - "dependencies"
+      - dependencies
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: monthly
+      interval: quarterly
     open-pull-requests-limit: 1000
     assignees:
       - Lruihao
