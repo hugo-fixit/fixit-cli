@@ -50,7 +50,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^4.13.3",
     "@hugo-fixit/fixit-releaser": "^1.1.6",
-    "@types/node": "^22.15.29",
+    "@types/node": "^24.0.10",
     "@types/shelljs": "^0.8.16",
     "eslint": "^9.28.0",
     "tsx": "^4.19.4",
