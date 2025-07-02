@@ -3,7 +3,7 @@ import type {
   SimpleGit,
   SimpleGitProgressEvent,
 } from 'simple-git'
-import fs from 'node:fs'
+import type { ReleaseInfo } from '../lib/utils.js'
 import { join } from 'node:path'
 import process from 'node:process'
 import * as p from '@clack/prompts'
@@ -17,7 +17,6 @@ import {
   getLatestRelease,
   handleTargetDir,
   modifyFile,
-  type ReleaseInfo,
   removeRemoteOrigin,
   timer,
 } from '../lib/utils.js'
