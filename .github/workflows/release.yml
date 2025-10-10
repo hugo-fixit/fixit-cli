@@ -23,17 +23,17 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0    # Fetch all history for generating release notes
 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 18
-      
-      - uses: pnpm/action-setup@v4
-      - uses: pnpm/action-setup@v4
+          node-version-file: .nvmrc
+          cache: pnpm
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -45,7 +45,7 @@ jobs:
 
       - name: Generate Changelog
         run: |
-          pnpm release --starting-version ${{ github.ref_name }}
+          pnpm changelog --starting-version ${{ github.ref_name }}
           sed -i '1,4d' CHANGELOG.md
 
       - name: GitHub Release

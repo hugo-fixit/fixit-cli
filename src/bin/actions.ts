@@ -21,6 +21,8 @@ import {
   timer,
 } from '../lib/utils.js'
 
+type Template = 'go' | 'git'
+
 /**
  * action for create command
  * @param {string} projectName project name
@@ -28,7 +30,7 @@ import {
  */
 async function createAction(projectName: string) {
   timer.start('Creating a new FixIt project step by step!')
-  const repositories = {
+  const repositories: Record<Template, string> = {
     go: 'https://github.com/hugo-fixit/hugo-fixit-starter.git',
     git: 'https://github.com/hugo-fixit/hugo-fixit-starter1.git',
   }
@@ -92,7 +94,7 @@ async function createAction(projectName: string) {
   p.log.step(`Initializing FixIt project ${targetDir}, please wait a moment...`)
   // 1. download template
   const spinnerClone = p.spinner()
-  spinnerClone.start(`Template downloading from ${c.cyan(repositories[answers.template])}.`)
+  spinnerClone.start(`Template downloading from ${c.cyan(repositories[answers.template as Template])}.`)
   const progress = ({ method, stage, progress }: SimpleGitProgressEvent) => {
     spinnerClone.message(c.yellow(`git.${method} ${stage} stage ${progress}% complete${'.'.repeat(Math.floor(Math.random() * 3) + 1)}`))
   }
@@ -107,12 +109,12 @@ async function createAction(projectName: string) {
     cloneOptions['--recurse-submodules'] = undefined
     cloneOptions['--shallow-submodules'] = undefined
   }
-  git.clone(repositories[answers.template], targetDir, cloneOptions, (err) => {
+  git.clone(repositories[answers.template as Template], targetDir, cloneOptions, (err) => {
     if (err) {
       spinnerClone.stop(err.message, -1)
       return
     }
-    spinnerClone.stop(`${c.green('✔')} Template downloaded from ${c.cyan(repositories[answers.template])}`, 0)
+    spinnerClone.stop(`${c.green('✔')} Template downloaded from ${c.cyan(repositories[answers.template as Template])}`, 0)
     const siteTime = new Date().toISOString()
 
     // 2. initialize FixIt project
