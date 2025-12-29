@@ -8,6 +8,7 @@ import {
   checkAction,
   createAction,
   createComponentAction,
+  splitAction,
 } from './actions.js'
 
 const pkg = importJson('/package.json')
@@ -49,6 +50,13 @@ program
   .action(createAction)
   .addCommand(createComponentCmd)
 program
+  .command('split')
+  .description('split hugo.toml into config/_default directory')
+  .argument('[file]', 'Input configuration file (local path or URL)', 'hugo.toml')
+  .option('-o, --output <dir>', 'Output directory', 'config/_default')
+  .helpOption(false)
+  .action(splitAction)
+program
   .command('check')
   .description('check the latest version of FixIt theme')
   .helpOption(false)
@@ -61,5 +69,4 @@ program
   .description(description)
   .version(`${pkg.name} v${pkg.version}`, '-v, --version')
   .showHelpAfterError()
-  // .action(createAction)
   .parse(process.argv)

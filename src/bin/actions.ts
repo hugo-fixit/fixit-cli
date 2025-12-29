@@ -3,8 +3,10 @@ import type {
   SimpleGit,
   SimpleGitProgressEvent,
 } from 'simple-git'
+import type { SplitFiles } from '../lib/splitter.js'
 import type { ReleaseInfo } from '../lib/utils.js'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import process from 'node:process'
 import * as p from '@clack/prompts'
 import c from 'picocolors'
@@ -13,6 +15,7 @@ import {
   CleanOptions,
   simpleGit,
 } from 'simple-git'
+import { ConfigSplitter } from '../lib/splitter.js'
 import {
   getLatestRelease,
   handleTargetDir,
@@ -293,6 +296,78 @@ async function createComponentAction(componentName: string) {
     })
   })
 }
+
+async function splitAction(file: string, options: { output: string }) {
+  timer.start('Splitting configuration file')
+
+  const outputDir = resolve(process.cwd(), options.output)
+  let content: string
+
+  // Check if file is a URL
+  const isUrl = /^https?:\/\//i.test(file)
+
+  if (isUrl) {
+    p.log.step(`Downloading from: ${c.cyan(file)}`)
+    const spinner = p.spinner()
+    spinner.start('Downloading remote file.')
+
+    try {
+      const response = await fetch(file)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      content = await response.text()
+      spinner.stop(`${c.green('✔')} Remote file downloaded successfully!`, 0)
+    }
+    catch (error) {
+      spinner.stop(`${c.red('✘')} Failed to download remote file.`, -1)
+      p.log.error(c.red((error as Error).message))
+      process.exit(1)
+    }
+  }
+  else {
+    const inputPath = resolve(process.cwd(), file)
+    p.log.step(`Reading from: ${c.cyan(inputPath)}`)
+
+    if (!existsSync(inputPath)) {
+      p.log.error(`${c.red('File not found:')} ${inputPath}`)
+      process.exit(1)
+    }
+
+    content = readFileSync(inputPath, 'utf-8')
+  }
+
+  const spinner = p.spinner()
+  spinner.start('Splitting configuration file.')
+
+  try {
+    const splitter = new ConfigSplitter()
+    const result: SplitFiles = splitter.split(content)
+
+    // Create output directory
+    if (!existsSync(outputDir)) {
+      spinner.message(`Creating directory: ${c.cyan(outputDir)}`)
+      mkdirSync(outputDir, { recursive: true })
+    }
+
+    // Write files
+    for (const [fileName, fileContent] of result) {
+      const filePath = join(outputDir, fileName)
+      writeFileSync(filePath, fileContent)
+      spinner.message(`${c.green('✔')} Created ${c.cyan(filePath)}`)
+    }
+
+    spinner.stop(`${c.green('✔')} Configuration file split successfully!`, 0)
+    p.log.success(`🎉 Created ${result.size} file(s) in ${c.cyan(outputDir)}`)
+    p.outro(`Done in ${timer.stop() / 1000}s`)
+  }
+  catch (error) {
+    spinner.stop(`${c.red('✘')} Failed to split configuration file.`, -1)
+    p.log.error(c.red((error as Error).message))
+    process.exit(1)
+  }
+}
+
 /**
  * action for check command
  * @example fixit check
@@ -328,4 +403,5 @@ export {
   checkAction,
   createAction,
   createComponentAction,
+  splitAction,
 }
