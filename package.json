@@ -50,7 +50,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^5.4.1",
     "@types/node": "^24.7.1",
-    "@types/shelljs": "^0.8.17",
+    "@types/shelljs": "^0.10.0",
     "auto-changelog-plus": "^1.2.1",
     "eslint": "^9.37.0",
     "tsx": "^4.20.6",
