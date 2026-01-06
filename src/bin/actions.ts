@@ -5,16 +5,18 @@ import type {
 } from 'simple-git'
 import type { SplitFiles } from '../lib/splitter.js'
 import type { ReleaseInfo } from '../lib/utils.js'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import * as p from '@clack/prompts'
+import yaml from 'js-yaml'
 import c from 'picocolors'
 import shell from 'shelljs'
 import {
   CleanOptions,
   simpleGit,
 } from 'simple-git'
+import toml from 'toml'
 import { ConfigSplitter } from '../lib/splitter.js'
 import {
   getLatestRelease,
@@ -368,6 +370,98 @@ async function splitAction(file: string, options: { output: string }) {
   }
 }
 
+async function tomlToYamlAction(file: string, options: { replace?: boolean }) {
+  const replace = options.replace ?? false
+
+  const inputPath = resolve(process.cwd(), file)
+  p.log.step(`Reading from: ${c.cyan(inputPath)}`)
+
+  if (!existsSync(inputPath)) {
+    p.log.error(`${c.red('File not found:')} ${inputPath}`)
+    process.exit(1)
+  }
+
+  const isDirectory = statSync(inputPath).isDirectory()
+  const tomlFiles: string[] = []
+
+  if (isDirectory) {
+    const files = readdirSync(inputPath)
+    for (const f of files) {
+      if (f.endsWith('.toml')) {
+        tomlFiles.push(resolve(inputPath, f))
+      }
+    }
+    if (tomlFiles.length === 0) {
+      p.log.error(`${c.red('No TOML files found in:')} ${inputPath}`)
+      process.exit(1)
+    }
+  }
+  else {
+    tomlFiles.push(inputPath)
+  }
+
+  const spinner = p.spinner()
+  spinner.start(`Converting TOML to YAML.`)
+
+  let successCount = 0
+  let failCount = 0
+
+  try {
+    for (const tomlFile of tomlFiles) {
+      try {
+        const tomlContent = readFileSync(tomlFile, 'utf-8')
+
+        const headerComments: string[] = []
+        const lines = tomlContent.split('\n')
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (trimmed === '') {
+            break
+          }
+          if (trimmed.startsWith('#')) {
+            headerComments.push(line)
+          }
+        }
+
+        const parsedToml = toml.parse(tomlContent)
+        let yamlContent = yaml.dump(parsedToml)
+
+        if (headerComments.length > 0) {
+          yamlContent = `${headerComments.join('\n')}\n\n${yamlContent}`
+        }
+
+        const outputPath = tomlFile.replace(/\.toml$/, '.yaml')
+        writeFileSync(outputPath, yamlContent)
+
+        if (replace) {
+          unlinkSync(tomlFile)
+        }
+
+        successCount++
+      }
+      catch (fileError) {
+        p.log.error(`${c.red('Failed to convert:')} ${tomlFile}`)
+        p.log.error(c.red((fileError as Error).message))
+        failCount++
+      }
+    }
+
+    spinner.stop(`${c.green('✔')} Converted ${successCount}/${tomlFiles.length} file(s) successfully!`, 0)
+    if (failCount > 0) {
+      p.log.warn(`${c.yellow(`${failCount} file(s) failed`)}`)
+    }
+    if (replace) {
+      p.log.info(`${c.cyan(`${successCount} TOML file(s) replaced`)}`)
+    }
+    p.outro(`Done in ${timer.stop() / 1000}s`)
+  }
+  catch (error) {
+    spinner.stop(`${c.red('✘')} Failed to convert TOML to YAML.`, -1)
+    p.log.error(c.red((error as Error).message))
+    process.exit(1)
+  }
+}
+
 /**
  * action for check command
  * @example fixit check
@@ -404,4 +498,5 @@ export {
   createAction,
   createComponentAction,
   splitAction,
+  tomlToYamlAction,
 }

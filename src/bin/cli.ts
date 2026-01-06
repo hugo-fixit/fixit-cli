@@ -9,6 +9,7 @@ import {
   createAction,
   createComponentAction,
   splitAction,
+  tomlToYamlAction,
 } from './actions.js'
 
 const pkg = importJson('/package.json')
@@ -56,6 +57,13 @@ program
   .option('-o, --output <dir>', 'Output directory', 'config/_default')
   .helpOption(false)
   .action(splitAction)
+program
+  .command('toml2yaml')
+  .description('convert TOML file(s) to YAML format (support directory)')
+  .argument('[file]', 'Input TOML file path or directory', 'hugo.toml')
+  .option('-r, --replace', 'replace original TOML file with YAML file')
+  .helpOption(false)
+  .action(tomlToYamlAction)
 program
   .command('check')
   .description('check the latest version of FixIt theme')

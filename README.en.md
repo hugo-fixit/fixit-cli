@@ -68,6 +68,29 @@ fixit split https://raw.githubusercontent.com/hugo-fixit/FixIt/refs/heads/main/h
 fixit split https://gitee.com/lruihao/FixIt/raw/main/hugo.toml
 ```
 
+### toml2yaml
+
+Convert TOML configuration files to YAML format, supporting single files or entire directories.
+
+Convert a single file:
+
+```bash
+fixit toml2yaml hugo.toml
+```
+
+Convert an entire directory:
+
+```bash
+fixit toml2yaml config/
+```
+
+Convert and replace the original file (delete TOML file):
+
+```bash
+fixit toml2yaml hugo.toml -r
+fixit toml2yaml config/ -r
+```
+
 ### check
 
 Check the latest version of the FixIt theme.
@@ -95,7 +118,7 @@ Usage: fixit <command> [options]
         █      ▐█  ▄ █   ▐█    █
          █      ▐ █   ▀▄  ▐   ▀
           ▀        ▀
-              fixit-cli v1.3.7
+              fixit-cli v1.4.0
          A cli tool for FixIt theme.
 
 =============================================
@@ -106,14 +129,15 @@ built with love by Lruihao and his friends.
 Complete documentation is available at https://fixit.lruihao.cn/.
 
 Options:
-  -v, --version              output the version number
-  -h, --help                 display help for command
+  -v, --version               output the version number
+  -h, --help                  display help for command
 
 Commands:
-  create|new [project-name]  create a new FixIt project/component from a template
-  split [options] [file]     split hugo.toml into config/_default directory
-  check                      check the latest version of FixIt theme
-  help [command]             display help for command
+  create|new [project-name]   create a new FixIt project/component from a template
+  split [options] [file]      split hugo.toml into config/_default directory
+  toml2yaml [options] [file]  convert TOML file(s) to YAML format (support directory)
+  check                       check the latest version of FixIt theme
+  help [command]              display help for command
 ```
 
 ## Development

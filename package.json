@@ -43,12 +43,15 @@
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "commander": "^14.0.1",
+    "js-yaml": "^4.1.1",
     "picocolors": "^1.1.1",
     "shelljs": "^0.10.0",
-    "simple-git": "^3.28.0"
+    "simple-git": "^3.28.0",
+    "toml": "^3.0.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.7.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.7.1",
     "@types/shelljs": "^0.10.0",
     "auto-changelog-plus": "^1.2.1",
