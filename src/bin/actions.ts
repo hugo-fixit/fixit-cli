@@ -9,16 +9,15 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync,
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import * as p from '@clack/prompts'
-import yaml from 'js-yaml'
 import c from 'picocolors'
 import shell from 'shelljs'
 import {
   CleanOptions,
   simpleGit,
 } from 'simple-git'
-import toml from 'toml'
 import { ConfigSplitter } from '../lib/splitter.js'
 import {
+  convertTomlToYaml,
   getLatestRelease,
   handleTargetDir,
   modifyFile,
@@ -299,7 +298,9 @@ async function createComponentAction(componentName: string) {
   })
 }
 
-async function splitAction(file: string, options: { output: string }) {
+async function splitAction(file: string, options: { output: string, yaml?: boolean }) {
+  const toYaml = options.yaml ?? false
+
   timer.start('Splitting configuration file')
 
   const outputDir = resolve(process.cwd(), options.output)
@@ -352,14 +353,39 @@ async function splitAction(file: string, options: { output: string }) {
       mkdirSync(outputDir, { recursive: true })
     }
 
+    const tomlFiles: string[] = []
+    let yamlConvertCount = 0
+
     // Write files
     for (const [fileName, fileContent] of result) {
-      const filePath = join(outputDir, fileName)
-      writeFileSync(filePath, fileContent)
-      spinner.message(`${c.green('✔')} Created ${c.cyan(filePath)}`)
+      const outputPath = join(outputDir, fileName)
+      writeFileSync(outputPath, fileContent)
+      spinner.message(`${c.green('✔')} Created ${c.cyan(outputPath)}`)
+      if (toYaml && fileName.endsWith('.toml')) {
+        tomlFiles.push(outputPath)
+      }
+    }
+
+    if (toYaml && tomlFiles.length > 0) {
+      for (const tomlFile of tomlFiles) {
+        try {
+          const yamlContent = convertTomlToYaml(readFileSync(tomlFile, 'utf-8'))
+          const yamlPath = tomlFile.replace(/\.toml$/, '.yaml')
+          writeFileSync(yamlPath, yamlContent)
+          unlinkSync(tomlFile)
+          yamlConvertCount++
+        }
+        catch (fileError) {
+          p.log.error(`${c.red('Failed to convert:')} ${tomlFile}`)
+          p.log.error(c.red((fileError as Error).message))
+        }
+      }
     }
 
     spinner.stop(`${c.green('✔')} Configuration file split successfully!`, 0)
+    if (yamlConvertCount > 0) {
+      p.log.success(`${c.green('✔')} ${yamlConvertCount}/${tomlFiles.length} TOML file(s) converted to YAML`)
+    }
     p.log.success(`🎉 Created ${result.size} file(s) in ${c.cyan(outputDir)}`)
     p.outro(`Done in ${timer.stop() / 1000}s`)
   }
@@ -409,27 +435,7 @@ async function tomlToYamlAction(file: string, options: { replace?: boolean }) {
   try {
     for (const tomlFile of tomlFiles) {
       try {
-        const tomlContent = readFileSync(tomlFile, 'utf-8')
-
-        const headerComments: string[] = []
-        const lines = tomlContent.split('\n')
-        for (const line of lines) {
-          const trimmed = line.trim()
-          if (trimmed === '') {
-            break
-          }
-          if (trimmed.startsWith('#')) {
-            headerComments.push(line)
-          }
-        }
-
-        const parsedToml = toml.parse(tomlContent)
-        let yamlContent = yaml.dump(parsedToml)
-
-        if (headerComments.length > 0) {
-          yamlContent = `${headerComments.join('\n')}\n\n${yamlContent}`
-        }
-
+        const yamlContent = convertTomlToYaml(readFileSync(tomlFile, 'utf-8'))
         const outputPath = tomlFile.replace(/\.toml$/, '.yaml')
         writeFileSync(outputPath, yamlContent)
 

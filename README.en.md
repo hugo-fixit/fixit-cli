@@ -68,6 +68,18 @@ fixit split https://raw.githubusercontent.com/hugo-fixit/FixIt/refs/heads/main/h
 fixit split https://gitee.com/lruihao/FixIt/raw/main/hugo.toml
 ```
 
+Specify output directory:
+
+```bash
+fixit split hugo.toml -o config/development
+```
+
+Split and convert to YAML format:
+
+```bash
+fixit split hugo.toml -y
+```
+
 ### toml2yaml
 
 Convert TOML configuration files to YAML format, supporting single files or entire directories.
