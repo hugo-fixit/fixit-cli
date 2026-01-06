@@ -183,7 +183,6 @@ pnpm remove -g fixit-cli
 ### TODO List
 
 - [ ] `fixit create` 命令在选择模板后增加主题组件选项选择步骤
-- [ ] 配置文件 toml 转 yaml/json 格式
 
 ## 相关项目
 
