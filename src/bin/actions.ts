@@ -5,7 +5,7 @@ import type {
 } from 'simple-git'
 import type { SplitFiles } from '../lib/splitter.js'
 import type { ReleaseInfo } from '../lib/utils.js'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import process from 'node:process'
 import * as p from '@clack/prompts'
@@ -17,6 +17,7 @@ import {
 } from 'simple-git'
 import { ConfigSplitter } from '../lib/splitter.js'
 import {
+  convertTomlToYaml,
   getLatestRelease,
   handleTargetDir,
   modifyFile,
@@ -297,7 +298,9 @@ async function createComponentAction(componentName: string) {
   })
 }
 
-async function splitAction(file: string, options: { output: string }) {
+async function splitAction(file: string, options: { output: string, yaml?: boolean }) {
+  const toYaml = options.yaml ?? false
+
   timer.start('Splitting configuration file')
 
   const outputDir = resolve(process.cwd(), options.output)
@@ -350,19 +353,116 @@ async function splitAction(file: string, options: { output: string }) {
       mkdirSync(outputDir, { recursive: true })
     }
 
+    const tomlFiles: string[] = []
+    let yamlConvertCount = 0
+
     // Write files
     for (const [fileName, fileContent] of result) {
-      const filePath = join(outputDir, fileName)
-      writeFileSync(filePath, fileContent)
-      spinner.message(`${c.green('✔')} Created ${c.cyan(filePath)}`)
+      const outputPath = join(outputDir, fileName)
+      writeFileSync(outputPath, fileContent)
+      spinner.message(`${c.green('✔')} Created ${c.cyan(outputPath)}`)
+      if (toYaml && fileName.endsWith('.toml')) {
+        tomlFiles.push(outputPath)
+      }
+    }
+
+    if (toYaml && tomlFiles.length > 0) {
+      for (const tomlFile of tomlFiles) {
+        try {
+          const yamlContent = convertTomlToYaml(readFileSync(tomlFile, 'utf-8'))
+          const yamlPath = tomlFile.replace(/\.toml$/, '.yaml')
+          writeFileSync(yamlPath, yamlContent)
+          unlinkSync(tomlFile)
+          yamlConvertCount++
+        }
+        catch (fileError) {
+          p.log.error(`${c.red('Failed to convert:')} ${tomlFile}`)
+          p.log.error(c.red((fileError as Error).message))
+        }
+      }
     }
 
     spinner.stop(`${c.green('✔')} Configuration file split successfully!`, 0)
+    if (yamlConvertCount > 0) {
+      p.log.success(`${c.green('✔')} ${yamlConvertCount}/${tomlFiles.length} TOML file(s) converted to YAML`)
+    }
     p.log.success(`🎉 Created ${result.size} file(s) in ${c.cyan(outputDir)}`)
     p.outro(`Done in ${timer.stop() / 1000}s`)
   }
   catch (error) {
     spinner.stop(`${c.red('✘')} Failed to split configuration file.`, -1)
+    p.log.error(c.red((error as Error).message))
+    process.exit(1)
+  }
+}
+
+async function tomlToYamlAction(file: string, options: { replace?: boolean }) {
+  const replace = options.replace ?? false
+
+  const inputPath = resolve(process.cwd(), file)
+  p.log.step(`Reading from: ${c.cyan(inputPath)}`)
+
+  if (!existsSync(inputPath)) {
+    p.log.error(`${c.red('File not found:')} ${inputPath}`)
+    process.exit(1)
+  }
+
+  const isDirectory = statSync(inputPath).isDirectory()
+  const tomlFiles: string[] = []
+
+  if (isDirectory) {
+    const files = readdirSync(inputPath)
+    for (const f of files) {
+      if (f.endsWith('.toml')) {
+        tomlFiles.push(resolve(inputPath, f))
+      }
+    }
+    if (tomlFiles.length === 0) {
+      p.log.error(`${c.red('No TOML files found in:')} ${inputPath}`)
+      process.exit(1)
+    }
+  }
+  else {
+    tomlFiles.push(inputPath)
+  }
+
+  const spinner = p.spinner()
+  spinner.start(`Converting TOML to YAML.`)
+
+  let successCount = 0
+  let failCount = 0
+
+  try {
+    for (const tomlFile of tomlFiles) {
+      try {
+        const yamlContent = convertTomlToYaml(readFileSync(tomlFile, 'utf-8'))
+        const outputPath = tomlFile.replace(/\.toml$/, '.yaml')
+        writeFileSync(outputPath, yamlContent)
+
+        if (replace) {
+          unlinkSync(tomlFile)
+        }
+
+        successCount++
+      }
+      catch (fileError) {
+        p.log.error(`${c.red('Failed to convert:')} ${tomlFile}`)
+        p.log.error(c.red((fileError as Error).message))
+        failCount++
+      }
+    }
+
+    spinner.stop(`${c.green('✔')} Converted ${successCount}/${tomlFiles.length} file(s) successfully!`, 0)
+    if (failCount > 0) {
+      p.log.warn(`${c.yellow(`${failCount} file(s) failed`)}`)
+    }
+    if (replace) {
+      p.log.info(`${c.cyan(`${successCount} TOML file(s) replaced`)}`)
+    }
+    p.outro(`Done in ${timer.stop() / 1000}s`)
+  }
+  catch (error) {
+    spinner.stop(`${c.red('✘')} Failed to convert TOML to YAML.`, -1)
     p.log.error(c.red((error as Error).message))
     process.exit(1)
   }
@@ -404,4 +504,5 @@ export {
   createAction,
   createComponentAction,
   splitAction,
+  tomlToYamlAction,
 }

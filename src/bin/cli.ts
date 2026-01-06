@@ -9,6 +9,7 @@ import {
   createAction,
   createComponentAction,
   splitAction,
+  tomlToYamlAction,
 } from './actions.js'
 
 const pkg = importJson('/package.json')
@@ -54,8 +55,16 @@ program
   .description('split hugo.toml into config/_default directory')
   .argument('[file]', 'Input configuration file (local path or URL)', 'hugo.toml')
   .option('-o, --output <dir>', 'Output directory', 'config/_default')
+  .option('-y, --yaml', 'convert TOML to YAML after splitting')
   .helpOption(false)
   .action(splitAction)
+program
+  .command('toml2yaml')
+  .description('convert TOML file(s) to YAML format (support directory)')
+  .argument('[file]', 'Input TOML file path or directory', 'hugo.toml')
+  .option('-r, --replace', 'replace original TOML file with YAML file')
+  .helpOption(false)
+  .action(tomlToYamlAction)
 program
   .command('check')
   .description('check the latest version of FixIt theme')

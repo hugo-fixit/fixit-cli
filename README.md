@@ -68,6 +68,41 @@ fixit split https://raw.githubusercontent.com/hugo-fixit/FixIt/refs/heads/main/h
 fixit split https://gitee.com/lruihao/FixIt/raw/main/hugo.toml
 ```
 
+指定输出目录：
+
+```bash
+fixit split hugo.toml -o config/development
+```
+
+分割后转换为 YAML 格式：
+
+```bash
+fixit split hugo.toml -y
+```
+
+### toml2yaml
+
+将 TOML 配置文件转换为 YAML 格式，支持单个文件或整个目录。
+
+转换单个文件：
+
+```bash
+fixit toml2yaml hugo.toml
+```
+
+转换整个目录：
+
+```bash
+fixit toml2yaml config/
+```
+
+转换后替换原文件（删除 TOML 文件）：
+
+```bash
+fixit toml2yaml hugo.toml -r
+fixit toml2yaml config/ -r
+```
+
 ### check
 
 检查 FixIt 主题的最新版本。
@@ -95,7 +130,7 @@ Usage: fixit <command> [options]
         █      ▐█  ▄ █   ▐█    █
          █      ▐ █   ▀▄  ▐   ▀
           ▀        ▀
-              fixit-cli v1.3.7
+              fixit-cli v1.4.0
          A cli tool for FixIt theme.
 
 =============================================
@@ -106,14 +141,15 @@ built with love by Lruihao and his friends.
 Complete documentation is available at https://fixit.lruihao.cn/.
 
 Options:
-  -v, --version              output the version number
-  -h, --help                 display help for command
+  -v, --version               output the version number
+  -h, --help                  display help for command
 
 Commands:
-  create|new [project-name]  create a new FixIt project/component from a template
-  split [options] [file]     split hugo.toml into config/_default directory
-  check                      check the latest version of FixIt theme
-  help [command]             display help for command
+  create|new [project-name]   create a new FixIt project/component from a template
+  split [options] [file]      split hugo.toml into config/_default directory
+  toml2yaml [options] [file]  convert TOML file(s) to YAML format (support directory)
+  check                       check the latest version of FixIt theme
+  help [command]              display help for command
 ```
 
 ## 开发
@@ -147,6 +183,7 @@ pnpm remove -g fixit-cli
 ### TODO List
 
 - [ ] `fixit create` 命令在选择模板后增加主题组件选项选择步骤
+- [ ] 配置文件 toml 转 yaml/json 格式
 
 ## 相关项目
 

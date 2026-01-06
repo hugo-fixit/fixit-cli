@@ -7,8 +7,10 @@ import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import * as p from '@clack/prompts'
+import yaml from 'js-yaml'
 import c from 'picocolors'
 import shell from 'shelljs'
+import toml from 'toml'
 
 interface ReleaseInfo {
   version: string
@@ -180,7 +182,31 @@ const timer: Timer = {
   },
 }
 
+function convertTomlToYaml(tomlContent: string): string {
+  const headerComments: string[] = []
+  const lines = tomlContent.split('\n')
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed === '') {
+      break
+    }
+    if (trimmed.startsWith('#')) {
+      headerComments.push(line)
+    }
+  }
+
+  const parsedToml = toml.parse(tomlContent)
+  let yamlContent = yaml.dump(parsedToml)
+
+  if (headerComments.length > 0) {
+    yamlContent = `${headerComments.join('\n')}\n\n${yamlContent}`
+  }
+
+  return yamlContent
+}
+
 export {
+  convertTomlToYaml,
   getLatestRelease,
   handleTargetDir,
   importJson,
