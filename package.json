@@ -47,7 +47,7 @@
     "picocolors": "^1.1.1",
     "shelljs": "^0.10.0",
     "simple-git": "^3.28.0",
-    "toml": "^3.0.0"
+    "toml": "^4.1.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.7.3",
