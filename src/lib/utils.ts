@@ -27,7 +27,9 @@ interface Timer {
 
 interface Spinner {
   start: (msg?: string) => void
-  stop: (msg?: string, code?: number) => void
+  stop: (msg?: string) => void
+  error: (msg?: string) => void
+  cancel: (msg?: string) => void
   message: (msg?: string) => void
 }
 
@@ -134,14 +136,14 @@ async function handleTargetDir(targetDir: string): Promise<string> {
 async function modifyFile(filePath: string, modifyFn: (data: string) => string, spinner: Spinner, message: string) {
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
-      spinner.stop(err.message, -1)
+      spinner.error(err.message)
       return
     }
     spinner.message(message)
     const result = modifyFn(data)
     fs.writeFile(filePath, result, 'utf8', (err) => {
       if (err) {
-        spinner.stop(err.message, -1)
+        spinner.error(err.message)
         return
       }
       spinner.message(`${c.green('✔')} ${message}`)
@@ -158,7 +160,7 @@ async function removeRemoteOrigin(git: SimpleGit, spinner: Spinner) {
   spinner.message('Removing remote origin.')
   git.removeRemote('origin', (err) => {
     if (err) {
-      spinner.stop(err.message, -1)
+      spinner.error(err.message)
       return
     }
     spinner.message(`${c.green('✔')} removed remote origin.`)

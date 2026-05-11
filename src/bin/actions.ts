@@ -44,7 +44,7 @@ async function createAction(projectName: string) {
         message: 'Please input project name:',
         placeholder: 'FixIt project name, e.g. `my-blog`',
         initialValue: projectName || '',
-        validate: (val: string) => {
+        validate: (val: string | undefined) => {
           if (val === '') {
             return 'FixIt project name is required!'
           }
@@ -87,7 +87,7 @@ async function createAction(projectName: string) {
       message: 'Please input module path:',
       placeholder: 'e.g. github.com/your_name/your_project',
       initialValue: `github.com/${answers.authorName || 'your_name'}/${answers.name}`,
-      validate: (val: string) => {
+      validate: (val: string | undefined) => {
         if (val === '') {
           return 'module path is required!'
         }
@@ -115,10 +115,10 @@ async function createAction(projectName: string) {
   }
   git.clone(repositories[answers.template as Template], targetDir, cloneOptions, (err) => {
     if (err) {
-      spinnerClone.stop(err.message, -1)
+      spinnerClone.error(err.message)
       return
     }
-    spinnerClone.stop(`${c.green('✔')} Template downloaded from ${c.cyan(repositories[answers.template as Template])}`, 0)
+    spinnerClone.stop(`${c.green('✔')} Template downloaded from ${c.cyan(repositories[answers.template as Template])}`)
     const siteTime = new Date().toISOString()
 
     // 2. initialize FixIt project
@@ -169,7 +169,7 @@ async function createAction(projectName: string) {
     spinnerInit.message('Removing history commits.')
     git.raw(['update-ref', '-d', 'HEAD'], (err) => {
       if (err) {
-        spinnerInit.stop(err.message, -1)
+        spinnerInit.error(err.message)
         return
       }
       spinnerInit.message(`${c.green('✔')} removed history commits.`)
@@ -177,7 +177,7 @@ async function createAction(projectName: string) {
       // commit first commit
       await git.add('./*')
       await git.commit('first commit')
-      spinnerInit.stop(`${c.green('✔')} FixIt project ${targetDir} initialized!`, 0)
+      spinnerInit.stop(`${c.green('✔')} FixIt project ${targetDir} initialized!`)
       p.log.success('🎉 Congratulations! You have created a new FixIt project.')
       const run = await p.confirm({
         message: '🚀 Do you want to start the development server now?',
@@ -219,7 +219,7 @@ async function createComponentAction(componentName: string) {
         message: 'Please input component name:',
         placeholder: 'Component name, e.g. `my-component`',
         initialValue: componentName || '',
-        validate: (val: string) => {
+        validate: (val: string | undefined) => {
           if (val === '') {
             return 'Component name is required!'
           }
@@ -229,7 +229,7 @@ async function createComponentAction(componentName: string) {
         message: 'Please input your GitHub username:',
         placeholder: 'GitHub username, e.g. `Lruihao`',
         initialValue: 'hugo-fixit',
-        validate: (val: string) => {
+        validate: (val: string | undefined) => {
           if (val === '') {
             return 'GitHub username is required!'
           }
@@ -255,10 +255,10 @@ async function createComponentAction(componentName: string) {
   git.clean(CleanOptions.FORCE)
   git.clone(repository, targetDir, { '--depth': 1, '--branch': 'main', '--single-branch': null }, (err) => {
     if (err) {
-      spinnerClone.stop(err.message, -1)
+      spinnerClone.error(err.message)
       return
     }
-    spinnerClone.stop(`${c.green('✔')} Skeleton downloaded from ${c.cyan(repository)}`, 0)
+    spinnerClone.stop(`${c.green('✔')} Skeleton downloaded from ${c.cyan(repository)}`)
     // 2. initialize FixIt component
     const spinnerInit = p.spinner()
     spinnerInit.start(`Initializing FixIt component ${targetDir}.`)
@@ -284,14 +284,14 @@ async function createComponentAction(componentName: string) {
     spinnerInit.message('Removing history commits.')
     git.raw(['update-ref', '-d', 'HEAD'], (err) => {
       if (err) {
-        spinnerInit.stop(err.message, -1)
+        spinnerInit.error(err.message)
         return
       }
       spinnerInit.message(`${c.green('✔')} removed history commits.`)
     }).then(async () => {
       await git.add('./*')
       await git.commit('first commit')
-      spinnerInit.stop(`${c.green('✔')} FixIt component ${targetDir} initialized!`, 0)
+      spinnerInit.stop(`${c.green('✔')} FixIt component ${targetDir} initialized!`)
       p.log.success('🎉 Congratulations! You have created a new FixIt component.')
       p.outro(`Done in ${timer.stop() / 1000}s`)
     })
@@ -320,10 +320,10 @@ async function splitAction(file: string, options: { output: string, yaml?: boole
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       content = await response.text()
-      spinner.stop(`${c.green('✔')} Remote file downloaded successfully!`, 0)
+      spinner.stop(`${c.green('✔')} Remote file downloaded successfully!`)
     }
     catch (error) {
-      spinner.stop(`${c.red('✘')} Failed to download remote file.`, -1)
+      spinner.error(`${c.red('✘')} Failed to download remote file.`)
       p.log.error(c.red((error as Error).message))
       process.exit(1)
     }
@@ -382,7 +382,7 @@ async function splitAction(file: string, options: { output: string, yaml?: boole
       }
     }
 
-    spinner.stop(`${c.green('✔')} Configuration file split successfully!`, 0)
+    spinner.stop(`${c.green('✔')} Configuration file split successfully!`)
     if (yamlConvertCount > 0) {
       p.log.success(`${c.green('✔')} ${yamlConvertCount}/${tomlFiles.length} TOML file(s) converted to YAML`)
     }
@@ -390,7 +390,7 @@ async function splitAction(file: string, options: { output: string, yaml?: boole
     p.outro(`Done in ${timer.stop() / 1000}s`)
   }
   catch (error) {
-    spinner.stop(`${c.red('✘')} Failed to split configuration file.`, -1)
+    spinner.error(`${c.red('✘')} Failed to split configuration file.`)
     p.log.error(c.red((error as Error).message))
     process.exit(1)
   }
@@ -452,7 +452,7 @@ async function tomlToYamlAction(file: string, options: { replace?: boolean }) {
       }
     }
 
-    spinner.stop(`${c.green('✔')} Converted ${successCount}/${tomlFiles.length} file(s) successfully!`, 0)
+    spinner.stop(`${c.green('✔')} Converted ${successCount}/${tomlFiles.length} file(s) successfully!`)
     if (failCount > 0) {
       p.log.warn(`${c.yellow(`${failCount} file(s) failed`)}`)
     }
@@ -462,7 +462,7 @@ async function tomlToYamlAction(file: string, options: { replace?: boolean }) {
     p.outro(`Done in ${timer.stop() / 1000}s`)
   }
   catch (error) {
-    spinner.stop(`${c.red('✘')} Failed to convert TOML to YAML.`, -1)
+    spinner.error(`${c.red('✘')} Failed to convert TOML to YAML.`)
     p.log.error(c.red((error as Error).message))
     process.exit(1)
   }
@@ -480,7 +480,7 @@ function checkAction() {
   getLatestRelease('hugo-fixit', 'FixIt')
     .then(({ version, changelog, homeUrl }: ReleaseInfo) => {
       p.log.info(`Release Notes: ${c.cyan(homeUrl)}\n\n${changelog.split('\n').map(line => c.gray(line)).join('\n')}`)
-      spinner.stop(`${c.green('✔')} The latest version of FixIt theme is ${c.blue(version)}.`, 0)
+      spinner.stop(`${c.green('✔')} The latest version of FixIt theme is ${c.blue(version)}.`)
       p.log.step(
         `You can use commands below to update FixIt theme to the latest version.\n`
         + `${c.gray('Hugo module:')}\n`
@@ -493,7 +493,7 @@ function checkAction() {
     })
     .catch((error: Error) => {
       p.log.error(c.red(error.message))
-      spinner.stop(`${c.red('✘')} failed to check the latest version of FixIt theme.`, -1)
+      spinner.error(`${c.red('✘')} failed to check the latest version of FixIt theme.`)
       p.log.step(`You can set GITHUB_TOKEN env to avoid GitHub API rate limit.\nRun command ${c.blue('fixit help check')} for more details.\n`)
       process.exit(1)
     })
