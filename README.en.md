@@ -80,6 +80,18 @@ Split and convert to YAML format:
 fixit split hugo.toml -y
 ```
 
+Fetch and split configuration from the latest FixIt release:
+
+```bash
+fixit split latest
+```
+
+Fetch and split the latest release configuration, then convert to YAML:
+
+```bash
+fixit split latest -y
+```
+
 ### toml2yaml
 
 Convert TOML configuration files to YAML format, supporting single files or entire directories.

@@ -300,22 +300,39 @@ async function createComponentAction(componentName: string) {
 
 async function splitAction(file: string, options: { output: string, yaml?: boolean }) {
   const toYaml = options.yaml ?? false
+  let source = file
 
   timer.start('Splitting configuration file')
 
   const outputDir = resolve(process.cwd(), options.output)
   let content: string
 
+  if (source === 'latest') {
+    const spinner = p.spinner()
+    spinner.start('Resolving latest FixIt release version.')
+    try {
+      const { version } = await getLatestRelease('hugo-fixit', 'FixIt')
+      source = `https://raw.githubusercontent.com/hugo-fixit/FixIt/refs/tags/${version}/hugo.toml`
+      spinner.stop(`${c.green('✔')} Resolved latest release: ${c.cyan(version)}`)
+      p.log.step(`Downloading from latest release: ${c.cyan(source)}`)
+    }
+    catch (error) {
+      spinner.error(`${c.red('✘')} Failed to resolve latest FixIt release version.`)
+      p.log.error(c.red((error as Error).message))
+      process.exit(1)
+    }
+  }
+
   // Check if file is a URL
-  const isUrl = /^https?:\/\//i.test(file)
+  const isUrl = /^https?:\/\//i.test(source)
 
   if (isUrl) {
-    p.log.step(`Downloading from: ${c.cyan(file)}`)
+    p.log.step(`Downloading from: ${c.cyan(source)}`)
     const spinner = p.spinner()
     spinner.start('Downloading remote file.')
 
     try {
-      const response = await fetch(file)
+      const response = await fetch(source)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -329,7 +346,7 @@ async function splitAction(file: string, options: { output: string, yaml?: boole
     }
   }
   else {
-    const inputPath = resolve(process.cwd(), file)
+    const inputPath = resolve(process.cwd(), source)
     p.log.step(`Reading from: ${c.cyan(inputPath)}`)
 
     if (!existsSync(inputPath)) {
