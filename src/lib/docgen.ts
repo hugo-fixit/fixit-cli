@@ -33,9 +33,10 @@ function isHardSeparator(text: string): boolean {
 
 /**
  * Parse the raw TOML text to extract comments for each key.
- * Returns a map of dotted key paths to their comment lines.
+ * Returns a map of dotted key paths to their comment lines,
+ * and the page-level boundary keys (start/end).
  */
-function extractComments(content: string): Map<string, string[]> {
+function extractComments(content: string): { commentMap: Map<string, string[]>, pageLevelStartKey: string, pageLevelEndKey: string } {
   const commentMap = new Map<string, string[]>()
   const lines = content.split('\n')
   const pendingComments: string[] = []
@@ -44,6 +45,10 @@ function extractComments(content: string): Map<string, string[]> {
   let inParams = false
   // How many comments were already stored as section comments (so we skip them for keys)
   let sectionCommentCount = 0
+  // Track hard separators to find page-level boundaries
+  let afterHardSeparator = false
+  let pageLevelStartKey = ''
+  let pageLevelEndKey = ''
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
@@ -62,6 +67,11 @@ function extractComments(content: string): Map<string, string[]> {
         continue
       }
       if (inParams && key.startsWith('params.')) {
+        // Track the first sub-section after the second hard separator as page-level end
+        if (afterHardSeparator && !pageLevelEndKey && pageLevelStartKey) {
+          pageLevelEndKey = key.split('.')[1]
+          afterHardSeparator = false
+        }
         // Scan backwards from the section header to find the split point.
         // Comments immediately before the header (with no blank line in between)
         // belong to the NEW section. Everything else belongs to the OLD section.
@@ -143,9 +153,11 @@ function extractComments(content: string): Map<string, string[]> {
     if (trimmed.startsWith('#')) {
       const commentText = trimmed.replace(/^#\s?/, '')
       if (isSeparatorComment(commentText)) {
-        // Hard separator (like # +++...): flush pending comments
-        if (isHardSeparator(commentText))
+        // Hard separator (like # +++...): flush pending comments and mark boundary
+        if (isHardSeparator(commentText)) {
           pendingComments.length = 0
+          afterHardSeparator = true
+        }
         // Soft separator (like # Global Colors #): just skip
         continue
       }
@@ -163,6 +175,11 @@ function extractComments(content: string): Map<string, string[]> {
     if (kvMatch && sectionStack.length > 0) {
       const keyName = kvMatch[1]
       const fullPath = [...sectionStack.slice(1), keyName].join('.')
+      // Track the first key after the hard separator as the page-level start
+      if (afterHardSeparator && !pageLevelStartKey && sectionStack.length === 1) {
+        pageLevelStartKey = keyName
+        afterHardSeparator = false
+      }
       // On the first key after a section header, split pending comments:
       // - Comments before the section header line index → section description (already stored)
       // - Comments after the section header → key comments
@@ -196,7 +213,7 @@ function extractComments(content: string): Map<string, string[]> {
     }
   }
 
-  return commentMap
+  return { commentMap, pageLevelStartKey, pageLevelEndKey }
 }
 
 /**
@@ -296,7 +313,10 @@ function joinComments(comments: string[]): string {
       return `Example: \`${trimmed}\`.`
     }
     let s = escapeMarkdown(trimmed)
-    s = s.charAt(0).toUpperCase() + s.slice(1)
+    // Don't capitalize URLs (http:// or https://)
+    if (!s.startsWith('http://') && !s.startsWith('https://')) {
+      s = s.charAt(0).toUpperCase() + s.slice(1)
+    }
     if (!s.endsWith('.') && !s.endsWith('!') && !s.endsWith('?'))
       s += '.'
     return s
@@ -446,8 +466,8 @@ function renderParam(doc: ParamDoc): string {
     meta += ` ${desc}.`
   }
 
-  // Top-level param: ## heading
-  lines.push(`## ${doc.name}`)
+  // Top-level param: ### heading
+  lines.push(`### ${doc.name}`)
   lines.push('')
   lines.push(meta)
 
@@ -491,14 +511,46 @@ export function generateDocs(content: string): string {
     throw new Error('No [params] section found in the TOML file.')
   }
 
-  const commentMap = extractComments(content)
+  const { commentMap, pageLevelStartKey, pageLevelEndKey } = extractComments(content)
   const params = parsed.params as Record<string, unknown>
   const docs = documentSection(params, commentMap, '')
 
-  const output: string[] = []
+  // Split docs into site-level and page-level groups
+  const siteLevel: ParamDoc[] = []
+  const pageLevel: ParamDoc[] = []
+  let isPageLevel = false
 
   for (const doc of docs) {
-    output.push(renderParam(doc))
+    if (pageLevelStartKey && doc.name === pageLevelStartKey) {
+      isPageLevel = true
+    }
+    if (pageLevelEndKey && doc.name === pageLevelEndKey) {
+      isPageLevel = false
+    }
+    if (isPageLevel) {
+      pageLevel.push(doc)
+    }
+    else {
+      siteLevel.push(doc)
+    }
+  }
+
+  const output: string[] = []
+
+  if (siteLevel.length > 0) {
+    output.push('## Site Level')
+    output.push('These apply to the entire site and cannot be overridden on a per-page basis.')
+    for (const doc of siteLevel) {
+      output.push(renderParam(doc))
+    }
+  }
+
+  if (pageLevel.length > 0) {
+    output.push('## Page Level')
+    output.push('These can be overridden on a per-page basis via front matter.')
+    for (const doc of pageLevel) {
+      output.push(renderParam(doc))
+    }
   }
 
   // Clean up trailing whitespace on each line
