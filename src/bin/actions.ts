@@ -15,6 +15,7 @@ import {
   CleanOptions,
   simpleGit,
 } from 'simple-git'
+import { applyTemplate, generateDocs } from '../lib/docgen.js'
 import { ConfigSplitter } from '../lib/splitter.js'
 import {
   convertTomlToYaml,
@@ -486,6 +487,118 @@ async function tomlToYamlAction(file: string, options: { replace?: boolean }) {
 }
 
 /**
+ * action for gendocs command
+ * Generate theme configuration documentation from hugo.toml
+ * @param {string} file input hugo.toml path or URL, or "latest"
+ * @param {object} options command options
+ * @param {string} [options.output] output file path
+ * @param {string} [options.template] template file path
+ * @example fixit gendocs
+ * @example fixit gendocs path/to/hugo.toml -o theme-config.md
+ * @example fixit gendocs path/to/hugo.toml -t template.md
+ * @example fixit gendocs latest -t template.md
+ * @example fixit gendocs https://example.com/hugo.toml -t template.md
+ */
+async function gendocsAction(file: string, options: { output?: string, template?: string }) {
+  timer.start('Generating theme configuration docs')
+
+  let source = file
+  let content: string
+  const spinner = p.spinner()
+
+  // Handle "latest" keyword
+  if (source === 'latest') {
+    spinner.start('Resolving latest FixIt release version.')
+    try {
+      const { version } = await getLatestRelease('hugo-fixit', 'FixIt')
+      source = `https://raw.githubusercontent.com/hugo-fixit/FixIt/refs/tags/${version}/hugo.toml`
+      spinner.stop(`${c.green('✔')} Resolved latest release: ${c.cyan(version)}`)
+      p.log.step(`Downloading from latest release: ${c.cyan(source)}`)
+    }
+    catch (error) {
+      spinner.error(`${c.red('✘')} Failed to resolve latest FixIt release version.`)
+      p.log.error(c.red((error as Error).message))
+      process.exit(1)
+    }
+  }
+
+  // Check if file is a URL
+  const isUrl = /^https?:\/\//i.test(source)
+
+  if (isUrl) {
+    p.log.step(`Downloading from: ${c.cyan(source)}`)
+    spinner.start('Downloading remote file.')
+    try {
+      const response = await fetch(source)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      content = await response.text()
+      spinner.stop(`${c.green('✔')} Remote file downloaded successfully!`)
+    }
+    catch (error) {
+      spinner.error(`${c.red('✘')} Failed to download remote file.`)
+      p.log.error(c.red((error as Error).message))
+      process.exit(1)
+    }
+  }
+  else {
+    const inputPath = resolve(process.cwd(), source)
+    p.log.step(`Reading from: ${c.cyan(inputPath)}`)
+    if (!existsSync(inputPath)) {
+      p.log.error(`${c.red('File not found:')} ${inputPath}`)
+      process.exit(1)
+    }
+    content = readFileSync(inputPath, 'utf-8')
+  }
+
+  try {
+    if (options.template) {
+      const templatePath = resolve(process.cwd(), options.template)
+      if (!existsSync(templatePath)) {
+        p.log.error(`${c.red('Template file not found:')} ${templatePath}`)
+        process.exit(1)
+      }
+      spinner.start('Parsing TOML and applying to template.')
+      const outputPath = options.output ? resolve(process.cwd(), options.output) : undefined
+      // Construct the command string for the auto-generated comment
+      let cmd = `fixit gendocs ${source}`
+      if (options.template) {
+        cmd += ` -t ${options.template}`
+      }
+      if (options.output) {
+        cmd += ` -o ${options.output}`
+      }
+      applyTemplate(content, templatePath, outputPath, cmd)
+      const dest = outputPath || templatePath
+      spinner.stop(`${c.green('✔')} Documentation applied to template.`)
+      p.log.success(`Written to ${c.cyan(dest)}`)
+    }
+    else {
+      spinner.start('Parsing TOML and generating documentation.')
+      const docs = generateDocs(content)
+      spinner.stop(`${c.green('✔')} Documentation generated.`)
+
+      if (options.output) {
+        const outputPath = resolve(process.cwd(), options.output)
+        writeFileSync(outputPath, docs)
+        p.log.success(`Written to ${c.cyan(outputPath)}`)
+      }
+      else {
+        process.stdout.write(docs)
+      }
+    }
+
+    p.outro(`Done in ${timer.stop() / 1000}s`)
+  }
+  catch (error) {
+    spinner.error(`${c.red('✘')} Failed to generate documentation.`)
+    p.log.error(c.red((error as Error).message))
+    process.exit(1)
+  }
+}
+
+/**
  * action for check command
  * @example fixit check
  * @example GITHUB_TOKEN=ghp_ifbeKixxxxxxxxxxxxxxxxxxxxxxxx0gVAgF fixit check
@@ -520,6 +633,7 @@ export {
   checkAction,
   createAction,
   createComponentAction,
+  gendocsAction,
   splitAction,
   tomlToYamlAction,
 }

@@ -8,6 +8,7 @@ import {
   checkAction,
   createAction,
   createComponentAction,
+  gendocsAction,
   splitAction,
   tomlToYamlAction,
 } from './actions.js'
@@ -70,6 +71,14 @@ program
   .description('check the latest version of FixIt theme')
   .helpOption(false)
   .action(checkAction)
+program
+  .command('gendocs')
+  .description('generate theme configuration documentation from hugo.toml')
+  .argument('[file]', 'Input hugo.toml path', 'hugo.toml')
+  .option('-o, --output <file>', 'Output markdown file path (default: stdout)')
+  .option('-t, --template <file>', 'Template file with HUGO_FIXIT_PARAMS markers to inject docs into')
+  .helpOption(false)
+  .action(gendocsAction)
 
 // define cli
 program

@@ -63,7 +63,7 @@ fixit split hugo.toml
 Split a remote file:
 
 ```bash
-fixit split https://raw.githubusercontent.com/hugo-fixit/FixIt/refs/heads/main/hugo.toml
+fixit split https://github.com/hugo-fixit/FixIt/raw/refs/heads/main/hugo.toml
 # or
 fixit split https://gitee.com/lruihao/FixIt/raw/main/hugo.toml
 ```
