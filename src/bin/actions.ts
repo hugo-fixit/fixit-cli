@@ -298,8 +298,12 @@ async function createComponentAction(componentName: string) {
   })
 }
 
-async function splitAction(file: string, options: { output: string, yaml?: boolean }) {
+async function splitAction(file: string, options: { output: string, exclude?: string[], yaml?: boolean }) {
   const toYaml = options.yaml ?? false
+  const excludeNames = new Set((options.exclude ?? []).map((name) => {
+    const clean = name.replace(/\.toml$/i, '')
+    return `${clean}.toml`
+  }))
   let source = file
 
   timer.start('Splitting configuration file')
@@ -372,12 +376,17 @@ async function splitAction(file: string, options: { output: string, yaml?: boole
 
     const tomlFiles: string[] = []
     let yamlConvertCount = 0
+    let writtenCount = 0
 
     // Write files
     for (const [fileName, fileContent] of result) {
+      if (excludeNames.has(fileName)) {
+        continue
+      }
       const outputPath = join(outputDir, fileName)
       writeFileSync(outputPath, fileContent)
       spinner.message(`${c.green('✔')} Created ${c.cyan(outputPath)}`)
+      writtenCount++
       if (toYaml && fileName.endsWith('.toml')) {
         tomlFiles.push(outputPath)
       }
@@ -403,7 +412,7 @@ async function splitAction(file: string, options: { output: string, yaml?: boole
     if (yamlConvertCount > 0) {
       p.log.success(`${c.green('✔')} ${yamlConvertCount}/${tomlFiles.length} TOML file(s) converted to YAML`)
     }
-    p.log.success(`🎉 Created ${result.size} file(s) in ${c.cyan(outputDir)}`)
+    p.log.success(`🎉 Created ${writtenCount} file(s) in ${c.cyan(outputDir)}`)
     p.outro(`Done in ${timer.stop() / 1000}s`)
   }
   catch (error) {

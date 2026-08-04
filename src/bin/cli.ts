@@ -55,6 +55,7 @@ program
   .description('split hugo.toml into config/_default directory')
   .argument('[file]', 'Input configuration source (local path, URL, or "latest")', 'hugo.toml')
   .option('-o, --output <dir>', 'Output directory', 'config/_default')
+  .option('-e, --exclude <names...>', 'exclude config files by name (e.g. mediaTypes outputFormats)')
   .option('-y, --yaml', 'convert TOML to YAML after splitting')
   .helpOption(false)
   .action(splitAction)
